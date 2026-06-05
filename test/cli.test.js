@@ -27,9 +27,9 @@ let server;
 let baseUrl;
 let tmpDir;
 
-function run(args) {
+function run(args, options = {}) {
   return new Promise((resolve) => {
-    execFile("node", [CLI, ...args], (err, stdout, stderr) => {
+    execFile("node", [CLI, ...args], options, (err, stdout, stderr) => {
       resolve({ code: err?.code ?? 0, stdout, stderr });
     });
   });
@@ -51,6 +51,20 @@ test("install extracts the skill folder", async () => {
   const { code } = await run(["skills", "install", "guider", "--dir", tmpDir, "--url", baseUrl]);
   assert.equal(code, 0);
   assert.ok(fs.existsSync(path.join(tmpDir, "guider", "SKILL.md")));
+});
+
+test("--project installs into the current project's .claude/skills", async () => {
+  const projDir = fs.mkdtempSync(path.join(os.tmpdir(), "guider-proj-"));
+  try {
+    const { code } = await run(
+      ["skills", "install", "guider", "--project", "--url", baseUrl],
+      { cwd: projDir },
+    );
+    assert.equal(code, 0);
+    assert.ok(fs.existsSync(path.join(projDir, ".claude", "skills", "guider", "SKILL.md")));
+  } finally {
+    fs.rmSync(projDir, { recursive: true, force: true });
+  }
 });
 
 test("list reads the folded block-scalar description", async () => {

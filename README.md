@@ -27,8 +27,12 @@ export GITHUB_TOKEN=ghp_xxx   # also accepts $GH_TOKEN or --token
 ## Usage
 
 ```bash
-# Install a skill
+# Install a skill (prompts: global vs. current project)
 npx @docsales/guider skills install guider
+
+# Skip the prompt with an explicit location
+npx @docsales/guider skills install guider --global    # ~/.claude/skills/user
+npx @docsales/guider skills install guider --project   # ./.claude/skills
 
 # Pin to a specific release tag
 npx @docsales/guider skills install guider --tag v1.0.0
@@ -52,7 +56,11 @@ npx @docsales/guider skills list
 npx @docsales/guider skills install guider --url https://example.com/guider.skill
 ```
 
-Skills install to `~/.claude/skills/user/` by default. Override with `--dir <path>`.
+When no location flag is given, `install` asks whether to install **globally**
+(`~/.claude/skills/user/`, for every project) or into the **current project**
+(`./.claude/skills/`). In a non-interactive shell (CI, pipes) it defaults to
+global so nothing hangs. Use `--global`, `--project`, or `--dir <path>` to choose
+explicitly.
 
 The installer reaches private release assets through the GitHub API (using your
 token), refuses any archive whose entries would extract outside the target

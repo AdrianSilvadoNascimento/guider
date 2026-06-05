@@ -24,7 +24,9 @@ skills
   .option("--tag <tag>", "Pin to a specific release tag (default: latest)")
   .option("--sha256 <hex>", "Verify the downloaded archive against a SHA-256 digest")
   .option("--token <token>", "GitHub token for private repos (or $GITHUB_TOKEN / $GH_TOKEN)")
-  .option("--dir <path>", "Target skills directory (default: ~/.claude/skills/user)")
+  .option("--global", "Install for all projects (~/.claude/skills/user)")
+  .option("--project", "Install into the current project (./.claude/skills)")
+  .option("--dir <path>", "Explicit target skills directory (overrides --global/--project)")
   .action(installSkill);
 
 skills
@@ -32,13 +34,15 @@ skills
   .description("Update an installed skill to its latest version (omit name to update all)")
   .option("--tag <tag>", "Pin to a specific release tag (default: latest)")
   .option("--token <token>", "GitHub token for private repos (or $GITHUB_TOKEN / $GH_TOKEN)")
-  .option("--dir <path>", "Target skills directory (default: ~/.claude/skills/user)")
+  .option("--project", "Update skills in the current project (./.claude/skills)")
+  .option("--dir <path>", "Explicit target skills directory (default: ~/.claude/skills/user)")
   .action(updateSkill);
 
 skills
   .command("list")
   .description("List installed skills")
-  .option("--dir <path>", "Target skills directory (default: ~/.claude/skills/user)")
+  .option("--project", "List skills in the current project (./.claude/skills)")
+  .option("--dir <path>", "Explicit target skills directory (default: ~/.claude/skills/user)")
   .action(listSkills);
 
 program.parse();

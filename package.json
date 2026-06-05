@@ -1,6 +1,6 @@
 {
   "name": "@docsales/guider",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI to manage guider skills for Claude.",
   "type": "module",
   "bin": {
