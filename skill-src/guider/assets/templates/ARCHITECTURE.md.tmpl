@@ -1,0 +1,58 @@
+<!--
+  ARCHITECTURE.md template (filled by `/guider init`).
+  This is the "why the code is shaped this way" map. Fill from the codebase
+  inventory and the interview; delete sections that don't apply.
+-->
+
+# Architecture — {{PROJECT_NAME}}
+
+## Stack
+
+{{STACK_SUMMARY}}  <!-- languages, runtimes, frameworks, DB, monorepo layout -->
+
+## Folder convention
+
+{{FOLDER_CONVENTION}}  <!-- by-layer or by-domain; the standard module layout -->
+
+```
+{{FOLDER_TREE}}
+```
+
+## Layering
+
+Transport → service/use-case → repository (abstract + implementation) → DB.
+Dependencies point inward on abstractions. {{LAYERING_NOTES}}
+
+## Bounded contexts
+
+{{BOUNDED_CONTEXTS}}  <!-- list each context, its responsibility, and how they relate. Omit if the app is a single context. -->
+
+## State machines
+
+<!-- For each workflow that moves through defined statuses: states (enum),
+     legal transitions, and side effects. Omit if none. -->
+{{STATE_MACHINES}}
+
+```
+{{STATE_DIAGRAM}}
+```
+
+## Data integrity
+
+- **RLS / multi-tenancy:** {{RLS_DECISIONS}}
+- **Encryption:** {{ENCRYPTION_DECISIONS}}  <!-- in transit, at rest, column-level + key source -->
+- **Transactions:** {{TRANSACTIONAL_OPS}}  <!-- which read-modify-write paths are wrapped -->
+- **Idempotency:** {{IDEMPOTENT_OPS}}  <!-- which operations, where the keys come from, TTL -->
+- **External calls:** {{RETRY_CACHE_POLICY}}  <!-- retry/backoff + cache TTLs per integration -->
+
+## Runtime infrastructure
+
+- **Cache:** {{CACHE_CHOICE}}  <!-- tool (e.g. Upstash Redis), what's cached, TTL strategy, invalidation rule. Omit if none. -->
+- **Background workers:** {{WORKER_CHOICE}}  <!-- tool (e.g. Trigger.dev), which tasks run async, retry/backoff policy, how idempotency is keyed. Omit if none. -->
+- **Realtime:** {{REALTIME_CHOICE}}  <!-- tool (e.g. Pusher), which channels/events, where event names are defined, private-channel auth, missed-message reconciliation. Omit if none. -->
+- **Access mode / config:** {{INFRA_CONFIG_NOTES}}  <!-- e.g. Upstash REST vs Redis protocol; clients injected as optional; secrets from the manager -->
+
+
+## Conventions (detail)
+
+{{CONVENTIONS_DETAIL}}  <!-- naming, enums-over-literals, DTO boundaries, error handling, logging, DRY limits, line length -->

@@ -1,0 +1,37 @@
+{
+  "name": "@docsales/guider",
+  "version": "1.0.0",
+  "description": "CLI to manage guider skills for Claude.",
+  "type": "module",
+  "bin": {
+    "guider": "bin/guider.js"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "AdrianSilvadoNascimento",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "chalk": "^5.6.2",
+    "commander": "^15.0.0",
+    "ora": "^9.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0"
+  }
+}

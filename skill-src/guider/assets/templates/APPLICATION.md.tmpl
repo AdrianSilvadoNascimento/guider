@@ -1,0 +1,36 @@
+<!--
+  APPLICATION.md template (filled by `/guider init`).
+  This is "what the product IS" — domain and flows, not code shape. Pair it
+  with ARCHITECTURE.md (the how). Delete sections that don't apply.
+-->
+
+# Application — {{PROJECT_NAME}}
+
+## What it is
+
+{{PRODUCT_SUMMARY}}  <!-- one paragraph: who uses it and what problem it solves -->
+
+## Domains
+
+{{DOMAINS}}  <!-- the core domains/areas in the user's own words -->
+
+## Key flows
+
+<!-- The handful of flows worth writing down (upload, auth, billing, OCR…).
+     For each: trigger, steps, and which integrity guarantees apply
+     (transaction? idempotent? RLS?). Point to ARCHITECTURE.md for the rules. -->
+
+### {{FLOW_NAME}}
+{{FLOW_STEPS}}
+
+## External integrations
+
+{{INTEGRATIONS}}  <!-- each third-party service, what it's used for, retry/cache policy -->
+
+## Environments
+
+{{ENVIRONMENTS}}  <!-- local / staging / prod, and how config & secrets are sourced -->
+
+## Glossary
+
+{{GLOSSARY}}  <!-- domain terms whose meaning isn't obvious from the name; esp. where a word means different things in different contexts -->

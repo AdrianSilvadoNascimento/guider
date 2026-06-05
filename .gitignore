@@ -1,0 +1,8 @@
+node_modules/
+*.log
+.DS_Store
+.env
+
+# Built artifacts — distributed via GitHub Releases, not committed
+# (remove this line if you prefer to commit the .skill file)
+dist/
