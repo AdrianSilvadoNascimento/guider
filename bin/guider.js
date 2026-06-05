@@ -23,6 +23,7 @@ skills
   .option("--url <url>", "Install directly from a .skill file URL")
   .option("--tag <tag>", "Pin to a specific release tag (default: latest)")
   .option("--sha256 <hex>", "Verify the downloaded archive against a SHA-256 digest")
+  .option("--token <token>", "GitHub token for private repos (or $GITHUB_TOKEN / $GH_TOKEN)")
   .option("--dir <path>", "Target skills directory (default: ~/.claude/skills/user)")
   .action(installSkill);
 
@@ -30,6 +31,7 @@ skills
   .command("update [name]")
   .description("Update an installed skill to its latest version (omit name to update all)")
   .option("--tag <tag>", "Pin to a specific release tag (default: latest)")
+  .option("--token <token>", "GitHub token for private repos (or $GITHUB_TOKEN / $GH_TOKEN)")
   .option("--dir <path>", "Target skills directory (default: ~/.claude/skills/user)")
   .action(updateSkill);
 
