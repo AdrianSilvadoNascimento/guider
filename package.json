@@ -21,6 +21,7 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
+    "build": "node scripts/build-skill.js",
     "lint": "eslint .",
     "test": "node --test"
   },

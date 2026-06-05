@@ -76,10 +76,24 @@ downloads the matching asset.
 
 ## Releasing a new skill version
 
-1. Rebuild the `.skill` file from the skill source.
-2. Create a GitHub Release and attach the `.skill` file as an asset.
-3. `update` automatically serves the newest release — no code change needed.
-   Consumers who want reproducible installs can pin with `--tag` and `--sha256`.
+The installer downloads the `guider.skill` asset **attached to the release** —
+so every release tag must carry that asset, or `install`/`update` fails with
+"Release <tag> has no asset named guider.skill".
+
+```bash
+# 1. Rebuild the .skill from skill-src/ (prints its sha256)
+npm run build
+
+# 2. Attach it to the release (create the release first if needed)
+gh release upload v1.0.1 dist/guider.skill --repo docsales/guider --clobber
+
+# or create the release and attach in one step:
+gh release create v1.0.1 dist/guider.skill --repo docsales/guider --title v1.0.1
+```
+
+`update` automatically serves the newest release — no code change needed.
+Consumers who want reproducible installs can pin with `--tag` and `--sha256`
+(use the digest printed by `npm run build`).
 
 ## Publishing the CLI (maintainers)
 
