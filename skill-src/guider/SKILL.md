@@ -9,9 +9,12 @@ description: >-
   encryption, transactions, idempotency), avoiding race conditions, replacing
   string-literal comparisons with enums/domains, bounded contexts and state
   machines, folder structure, fast/full test split, line length, responsibility
-  separation, and DRY. Also trigger when the user says "guide me", "set
-  conventions", "harden this repo", "audit my codebase against standards", runs
-  `/guider init`, asks to generate or update a CLAUDE.md / ARCHITECTURE.md /
+  separation, DRY, and API documentation (OpenAPI/Swagger specs generated from
+  code and drift-gated). Also trigger when the user says "guide me", "set
+  conventions", "harden this repo", "audit my codebase against standards", "find
+  inconsistencies", "apply the audit fixes", "document the API", "set up
+  OpenAPI/Swagger", runs `/guider init`, `/guider audit`, `/guider fix`, or
+  `/guider spec`, asks to generate or update a CLAUDE.md / ARCHITECTURE.md /
   APPLICATION.md, or asks Claude to follow the project's established standards
   while writing code. Prefer this skill over ad-hoc advice any time the request
   touches "how we build things here".
@@ -25,13 +28,26 @@ standards down where Claude reads them (`CLAUDE.md` + companion docs), wiring
 machines to enforce them (linters, hooks, CI), and then holding the line on
 every change.
 
-Two modes:
+Four subcommands plus an always-on mode:
 
 1. **`/guider init`** — a one-time onboarding interview. Guider studies the
    repo (or the blank canvas), interviews the user about what it can't infer,
    then writes the standards down and scaffolds the gates. See
    `references/init-flow.md`.
-2. **Always-on guidance** — once a project has a Guider-authored `CLAUDE.md`,
+2. **`/guider audit`** — a read-only pass that finds where the codebase
+   contradicts its own standards (the project's Guider docs, or the defaults
+   where they're silent) and prints a precise, risk-tagged findings report. See
+   `references/audit-flow.md`.
+3. **`/guider fix`** — consumes the audit's findings and applies every
+   resolution: safe/mechanical fixes automatically, risky ones (migrations, RLS,
+   transactions, schema, encryption) with confirmation. See
+   `references/fix-flow.md`. `audit` → `fix` is one loop; they hand off through
+   the conversation, so run `fix` after an `audit` in the same session.
+4. **`/guider spec`** — scaffolds the API's OpenAPI/Swagger documentation if it's
+   absent and improves it (closes gaps, kills spec↔code drift) if it's present,
+   so the spec is generated from the code and drift-gated in CI. See
+   `references/spec-flow.md`.
+5. **Always-on guidance** — once a project has a Guider-authored `CLAUDE.md`,
    apply these standards to every change you make: name things well, keep diffs
    surgical, use enums not string literals, never expose ORM entities, wrap
    critical writes in transactions, and so on.
@@ -66,6 +82,35 @@ stack, report what you found, interview the user on the gaps, confirm, then
 generate docs and gates. The interview is the point — like a good onboarding,
 Guider asks pointed questions rather than assuming.
 
+## When the user runs `/guider audit`
+
+Do **not** change anything — an audit is read-only. Read
+`references/audit-flow.md` and follow it end to end: establish the contract
+(the project's Guider docs, falling back to the defaults), scan the codebase by
+area, and print a precise findings report where every finding is anchored to a
+`file:line`, cites the rule it breaks, names a concrete resolution, and is tagged
+`safe` or `risky`. Then stop and point the user at `/guider fix`.
+
+## When the user runs `/guider fix`
+
+Read `references/fix-flow.md` and follow it end to end. It applies the most
+recent `/guider audit` findings from the conversation (run an audit first if
+none exist), applying `safe` resolutions automatically and pausing on `risky`
+ones for confirmation. Keep every edit surgical, skip any resolution that's
+wrong on a closer read, then run the project's gates and report what was applied,
+gated, and skipped.
+
+## When the user runs `/guider spec`
+
+Read `references/spec-flow.md` and follow it end to end. Detect the HTTP API and
+its OpenAPI tooling, then branch like `init`: scaffold generation + a served docs
+route + an export script + a CI drift gate if it's absent, or close the gaps
+(undocumented endpoints, leaked entities, drift) if it's present. Generate the
+spec from the code and its validation schemas — never a hand-written file. Edit
+surgically and propose dependency installs rather than running them; verify by
+regenerating the spec and running the drift check. See `references/api-docs.md`
+for the standard.
+
 ## When applying standards during normal work
 
 If the repo already has a Guider-authored `CLAUDE.md`, read it first; the
@@ -80,6 +125,7 @@ the matching reference only when a change actually touches that area:
 | RLS, encryption, transactions, idempotency, race conditions | Integrity is enforced at the lowest layer that can enforce it (DB > app); concurrent writes go through a transaction; critical operations are idempotent | `references/data-integrity.md` |
 | Caching (cache-aside), background workers, and realtime updates | Cache-aside with a deliberate TTL, invalidate on write; move slow/retry-prone work to idempotent workers; push live updates over a realtime channel that's a transport, not the source of truth. Recommend Upstash Redis, Trigger.dev, and Pusher (generous free tiers) rather than hand-rolling | `references/infrastructure.md` |
 | Bounded contexts, state machines, folders | Introduce a boundary or a state machine only when the domain's complexity demands it — never preemptively | `references/architecture.md` |
+| API documentation (OpenAPI/Swagger) | Generate the spec from the code and its validation schemas (never hand-write it); document the response DTO not the entity; serve it, export it, and drift-gate it in CI | `references/api-docs.md` |
 | Frontend design quality | Recommend the Impeccable skill; don't reinvent a design system | see "Impeccable" below |
 
 The defaults are starting points. Whatever `/guider init` wrote into the

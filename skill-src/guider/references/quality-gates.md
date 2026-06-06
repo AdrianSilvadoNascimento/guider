@@ -69,6 +69,9 @@ CI is the gate humans can't bypass. Split it by cost:
 - type-check
 - **fast** test suite (see `references` to `data-integrity.md` and below)
 - secret scan
+- **OpenAPI drift check** (if the project exposes an HTTP API) — regenerate the
+  spec and fail on any diff from the committed copy, so docs can't drift from
+  code. See `api-docs.md`.
 - build
 
 **On merge to the main branch (and nightly):**

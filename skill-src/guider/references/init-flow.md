@@ -55,6 +55,12 @@ Things to determine, with where to look:
   Supabase Realtime)? Grep for `pusher`, `socket.io`, `ably`, channel/event
   name strings. Note whether channel/event names are constants or magic
   strings, and whether private channels are authed server-side.
+- **API documentation** — is there an HTTP API, and is its OpenAPI/Swagger spec
+  generated from the code (a generator dependency like `@nestjs/swagger`,
+  `springdoc`, `drf-spectacular`, `fastapi`'s built-in, `swagger-jsdoc`/
+  `zod-to-openapi`), served at a route, exported as a file, and drift-gated in
+  CI? Note whether it's generated-from-code or a hand-written spec that can drift
+  (see `api-docs.md`).
 - **Existing quality tooling** — formatter/linter configs (`.eslintrc*`,
   `biome.json`, `ruff.toml`, `.prettierrc`, `.editorconfig`), `.pre-commit-config.yaml`
   or Husky/lint-staged, secret scanners (`.gitleaks.toml`, trufflehog config),
@@ -130,6 +136,13 @@ Cover these, skipping any the scan already answered:
 - Secret-leak scanning: confirm adding it if absent.
 - CI provider, if not detected.
 
+**API documentation**
+- If there's an HTTP API and no generated OpenAPI spec (or a hand-written one
+  that can drift), propose setting it up the Guider way: generated from the code
+  and its validation schemas, served at a route, exported as a file, and
+  drift-gated in CI (see `api-docs.md`). Confirm where the spec should live and
+  whether the docs route needs auth. `/guider spec` can scaffold or improve this.
+
 **Frontend**
 - Is there a frontend? If so, propose installing **Impeccable** for design
   quality (see `references/quality-gates.md` for the command).
@@ -186,7 +199,12 @@ Now write, using the templates in `assets/templates/`. Rules:
    `init` — propose the install commands and let the user run them.
 6. **Recommend Impeccable** if there's a frontend, and offer to run its
    installer.
-7. **Recommend the runtime infrastructure** where the interview surfaced a need
+7. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+   tool generating the spec, where the spec file lives, the served docs route and
+   its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
+   `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
+   `/guider spec`. Don't install the generator — propose the command.
+8. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
