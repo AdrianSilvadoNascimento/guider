@@ -14,6 +14,7 @@ npm run build    # build dist/guider.skill from skill-src/ (prints its sha256)
 | `bin/guider.js` | CLI entry point (commander) — `skills install/update/list` |
 | `lib/skills/` | `install`, `update`, `list`, `download`, `registry`, `safe-extract` |
 | `lib/utils.js` | Per-tool skill directories (Claude / Codex) and target resolution |
+| `lib/version-check.js` | Best-effort "newer CLI on npm" notifier (cached, non-blocking) |
 | `scripts/build-skill.js` | Packs `skill-src/guider/` into `dist/guider.skill` |
 | `skill-src/guider/` | The skill source: `SKILL.md`, `references/`, `assets/templates/` |
 | `test/` | `node --test` suites for the CLI, targets, download, and safe-extract |

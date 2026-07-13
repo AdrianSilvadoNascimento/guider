@@ -6,9 +6,13 @@ import { dirname, join } from "path";
 import { installSkill } from "../lib/skills/install.js";
 import { updateSkill } from "../lib/skills/update.js";
 import { listSkills } from "../lib/skills/list.js";
+import { notifyFromCache, refreshCache } from "../lib/version-check.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf8"));
+
+// Surface a known-newer CLI version up front (instant, from cache).
+notifyFromCache(pkg);
 
 program
   .name("guider")
@@ -49,4 +53,6 @@ skills
   .option("--dir <path>", "Explicit target skills directory (default: the tool's global dir)")
   .action(listSkills);
 
-program.parse();
+// Run the command, then refresh the update cache (bounded; shows next run).
+await program.parseAsync();
+await refreshCache(pkg);

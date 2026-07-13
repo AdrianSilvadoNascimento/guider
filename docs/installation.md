@@ -64,6 +64,27 @@ npx @adrianfsf/guider skills list --project  # current project
 npx @adrianfsf/guider skills list --codex    # Codex / ChatGPT
 ```
 
+## Keeping the CLI up to date
+
+The CLI checks npm for a newer version at most once a day and, when one exists,
+prints a nudge on its next run:
+
+```
+Update available: 1.2.0 → 1.3.0
+Run npm i -g @adrianfsf/guider@latest to update the CLI.
+```
+
+The check is best-effort and never blocks a command (it reads from a local
+cache and refreshes in the background with a short timeout). To update:
+
+```bash
+npm i -g @adrianfsf/guider@latest   # if installed globally
+# with npx, the next `npx @adrianfsf/guider@latest ...` fetches the new version
+```
+
+Silence the check with `NO_UPDATE_NOTIFIER=1` (it's also off automatically when
+`CI` is set).
+
 ## Tokens & rate limits
 
 Public installs are anonymous and don't need a token. The GitHub API rate-limits
