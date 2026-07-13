@@ -11,15 +11,16 @@ the only difference is the destination directory.
 ## Install
 
 ```bash
-# Install a skill (prompts: global vs. current project)
+# Install a skill — prompts which agent (Claude or Codex / ChatGPT),
+# then global vs. current project
 npx @adrianfsf/guider skills install guider
 
-# Target Codex / ChatGPT instead of Claude
+# Skip the agent prompt with a tool flag
+npx @adrianfsf/guider skills install guider --claude
 npx @adrianfsf/guider skills install guider --codex
 
-# Skip the prompt with an explicit location
-npx @adrianfsf/guider skills install guider --global
-npx @adrianfsf/guider skills install guider --project
+# Skip the location prompt too
+npx @adrianfsf/guider skills install guider --claude --global
 npx @adrianfsf/guider skills install guider --codex --project
 
 # Explicit target directory (overrides --global/--project)
@@ -35,9 +36,11 @@ npx @adrianfsf/guider skills install guider --sha256 <hex>
 npx @adrianfsf/guider skills install guider --url https://example.com/guider.skill
 ```
 
-When no location flag is given, `install` asks whether to install **globally**
-or into the **current project**. In a non-interactive shell (CI, pipes) it
-defaults to global so nothing hangs.
+On a terminal, `install` first asks **which agent** (Claude or Codex / ChatGPT)
+unless you pass `--claude`/`--codex`, then asks **global vs. current project**
+unless you pass `--global`/`--project`/`--dir`. In a non-interactive shell
+(CI, pipes) it skips both prompts and defaults to Claude, global — so nothing
+hangs.
 
 ## Update
 
