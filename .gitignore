@@ -3,6 +3,9 @@ node_modules/
 .DS_Store
 .env
 
+# npm auth — references $NPM_TOKEN; never commit a real token
+.npmrc
+
 # Built artifacts — distributed via GitHub Releases, not committed
 # (remove this line if you prefer to commit the .skill file)
 dist/
