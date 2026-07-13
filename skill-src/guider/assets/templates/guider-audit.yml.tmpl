@@ -5,43 +5,31 @@
 # Claude Code session needs NONE of this file — it's an optional add-on, not
 # a prerequisite.
 #
+# How it loads guider: this workflow installs the guider skill straight from
+# npm into the checked-out workspace's `.claude/skills/` directory, then
+# `claude-code-action` discovers it there automatically (project skills are
+# picked up from `.claude/skills/`). No plugin marketplace, no extra auth for
+# the skill itself — it's the same public CLI + release asset anyone installs
+# with (`npx @adrianfsf/guider skills install guider`).
+#
 # Filling checklist (see ci-automation.md for detail on each):
 #   - Keep exactly ONE of the two `with:` auth lines below; delete the other.
-#   - Fill {{PLUGIN_MARKETPLACE_URL}} and {{MARKETPLACE_NAME}} from the repo/
-#     name this Claude Code session actually loaded `guider` from.
 #   - Delete the `allowed_bots` line entirely if this repo has no bot-opened
 #     PRs (the common case) — don't leave it commented out.
-#   - Only add the private-marketplace cross-repo-token steps (documented in
-#     `ci-automation.md`, "If your marketplace repo is private") if the
-#     interview confirmed that repo is actually private. Most projects won't
-#     need them — skip by default.
 #   - Write the result to this project's own workflow directory (usually
 #     `.github/workflows/`, confirm rather than assume) and delete this
 #     header comment once filled.
 name: Guider audit (advisory)
 
-# Runs the `guider` skill's /guider audit against just this PR's diff and
-# posts the findings as a comment. Advisory only — `contents: read` (no
-# write) means this job physically cannot push a commit or edit a file, so
-# it can never block or alter the PR; it only reports. `id-token: write` is
-# unrelated to that guarantee: it's Anthropic's own recommended default for
-# claude-code-action (some auth/plugin paths use it, some don't; granting it
-# is harmless either way — it does not add any repo/content access).
+# Runs the `guider` skill's /guider audit against just this PR's diff and posts
+# the findings as a comment. Advisory only — `contents: read` (no write) means
+# this job physically cannot push a commit or edit a file, so it can never block
+# or alter the PR; it only reports.
 #
 # Requires (set up once, by a repo admin — not done by this workflow):
-#   Secrets and variables > Actions > New repository secret > the ONE
-#   secret matching whichever auth line is kept below (ANTHROPIC_API_KEY
-#   or CLAUDE_CODE_OAUTH_TOKEN).
-#
-# guider itself is a Claude Code plugin, sourced from a marketplace repo
-# ({{PLUGIN_MARKETPLACE_URL}}). This workflow loads it directly from there so
-# CI doesn't depend on org-level plugin provisioning (org-wide Claude Plugin
-# provisioning is tied to an authenticated claude.ai session — a GitHub
-# Actions runner has no such session, so it can't see it even if your org
-# has the plugin installed for everyone). If that marketplace repo is
-# PRIVATE, this clone needs its own credentials — see
-# references/ci-automation.md ("If your marketplace repo is private");
-# skip that entirely if it's public.
+#   Secrets and variables > Actions > New repository secret > the ONE secret
+#   matching whichever auth line is kept below (ANTHROPIC_API_KEY or
+#   CLAUDE_CODE_OAUTH_TOKEN).
 
 on:
   pull_request:
@@ -50,7 +38,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  id-token: write
 
 concurrency:
   group: guider-audit-${{ github.event.pull_request.number }}
@@ -65,6 +52,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Install the guider skill into this workspace so claude-code-action
+      # discovers it under .claude/skills/guider. Pin the version (e.g.
+      # @adrianfsf/guider@1.2.0) instead of @latest for reproducible CI.
+      - name: Install the guider skill
+        run: npx -y @adrianfsf/guider@latest skills install guider --project
+
       - uses: anthropics/claude-code-action@v1
         with:
           # Pick ONE of the two auth lines below (delete the other):
@@ -77,19 +70,18 @@ jobs:
           # actor"). Name it explicitly (never "*", which trusts any bot):
           # allowed_bots: "{{BOT_NAME}}[bot]"
 
-          plugin_marketplaces: "{{PLUGIN_MARKETPLACE_URL}}"
-          plugins: "guider@{{MARKETPLACE_NAME}}"
           prompt: |
-            Run /guider:guider audit, scoped ONLY to the files changed in
-            this pull request (diff this branch against the PR base branch —
-            do not audit the rest of the repository).
+            Run the guider skill's audit (/guider audit), scoped ONLY to the
+            files changed in this pull request — diff this branch against the
+            PR base branch (${{ github.event.pull_request.base.ref }}); do not
+            audit the rest of the repository.
 
             Post the findings report as a single PR comment on
             ${{ github.repository }}#${{ github.event.pull_request.number }}.
 
-            This is advisory only: do NOT run /guider:guider fix, do NOT
-            edit any files, do NOT create commits — you have no write access
-            to contents anyway. If the audit finds nothing, post a short
-            comment saying so instead of staying silent.
+            Advisory only: do NOT run /guider fix, do NOT edit any files, do NOT
+            create commits — you have no write access to contents anyway. If the
+            audit finds nothing, post a short comment saying so instead of
+            staying silent.
           claude_args: |
             --max-turns 50

@@ -1,6 +1,6 @@
 {
   "name": "@adrianfsf/guider",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "CLI to install and manage coding-agent skills for Claude and Codex (ChatGPT).",
   "type": "module",
   "bin": {

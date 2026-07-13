@@ -141,12 +141,12 @@ Cover these, skipping any the scan already answered:
 (this specific mode is GitHub-specific; see `ci-automation.md`)
 - Want `/guider audit` to run automatically on every PR and post the findings
   as a comment, instead of (or in addition to) running it by hand? If yes,
-  gather the four things `ci-automation.md`'s template needs: which auth
-  secret they'll use (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`), the
-  marketplace repo + name this session's `guider` was actually loaded from,
+  gather the three things `ci-automation.md`'s template needs: which auth
+  secret they'll use (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`),
   whether this repo has bot-opened PRs (and if so, the bot's name), and where
-  its other workflows live. If no, skip the rest of this round entirely — it's
-  opt-in, not a default.
+  its other workflows live. (The workflow installs `guider` itself from the
+  public CLI — no marketplace or plugin to configure.) If no, skip the rest of
+  this round entirely — it's opt-in, not a default.
 
 **API documentation**
 - If there's an HTTP API and no generated OpenAPI spec (or a hand-written one
@@ -236,10 +236,10 @@ Now write, using the templates in `assets/templates/`. Rules:
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
-   that matches their answer, delete the `allowed_bots` line entirely if they
-   have no bot-opened PRs, and only add the private-marketplace cross-repo
-   token steps if they confirmed that repo is private. Propose the
-   secret-creation command; never run it or ask for the raw value.
+   that matches their answer, and delete the `allowed_bots` line entirely if
+   they have no bot-opened PRs. The workflow installs the skill from the public
+   CLI, so there's nothing else to wire. Propose the secret-creation command;
+   never run it or ask for the raw value.
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
