@@ -1,5 +1,5 @@
 {
-  "name": "@docsales/guider",
+  "name": "@adriansilvadonascimento/guider",
   "version": "1.1.0",
   "description": "CLI to manage guider skills for Claude.",
   "type": "module",
@@ -15,10 +15,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/docsales/guider.git"
+    "url": "git+https://github.com/AdrianSilvadoNascimento/guider.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "scripts": {
     "build": "node scripts/build-skill.js",
@@ -27,7 +27,7 @@
   },
   "keywords": [],
   "author": "AdrianSilvadoNascimento",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "dependencies": {
     "adm-zip": "^0.5.17",
     "chalk": "^5.6.2",

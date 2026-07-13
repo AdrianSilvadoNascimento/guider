@@ -13,7 +13,7 @@ test("registry.resolve returns a url descriptor for --url", () => {
 test("registry.resolve returns a github descriptor for known skills", () => {
   assert.deepEqual(resolve("guider", {}), {
     kind: "github",
-    repo: "docsales/guider",
+    repo: "AdrianSilvadoNascimento/guider",
     asset: "guider.skill",
     tag: undefined,
   });
@@ -33,11 +33,11 @@ test("download(github) hits the API with auth and returns the asset bytes", asyn
   const realFetch = globalThis.fetch;
   globalThis.fetch = async (url, opts) => {
     calls.push({ url, auth: opts?.headers?.Authorization });
-    if (url.startsWith("https://api.github.com/repos/docsales/guider/releases/latest")) {
+    if (url.startsWith("https://api.github.com/repos/AdrianSilvadoNascimento/guider/releases/latest")) {
       return new Response(
         JSON.stringify({
           tag_name: "v1.0.0",
-          assets: [{ name: "guider.skill", url: "https://api.github.com/repos/docsales/guider/releases/assets/1" }],
+          assets: [{ name: "guider.skill", url: "https://api.github.com/repos/AdrianSilvadoNascimento/guider/releases/assets/1" }],
         }),
         { status: 200 },
       );
@@ -49,7 +49,7 @@ test("download(github) hits the API with auth and returns the asset bytes", asyn
   };
   try {
     const buf = await download(
-      { kind: "github", repo: "docsales/guider", asset: "guider.skill" },
+      { kind: "github", repo: "AdrianSilvadoNascimento/guider", asset: "guider.skill" },
       "tok123",
     );
     assert.equal(buf.toString(), "ZIPBYTES");
@@ -64,7 +64,7 @@ test("download(github) explains a private-repo 404", async () => {
   globalThis.fetch = async () => new Response("", { status: 404 });
   try {
     await assert.rejects(
-      () => download({ kind: "github", repo: "docsales/guider", asset: "guider.skill" }, null),
+      () => download({ kind: "github", repo: "AdrianSilvadoNascimento/guider", asset: "guider.skill" }, null),
       /Release not found/,
     );
   } finally {

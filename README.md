@@ -1,59 +1,36 @@
 # guider
 
-CLI to install and update Claude skills. Published to **GitHub Packages** under
-the private `docsales` org.
-
-## Consumer setup (one time per machine)
-
-Because both the CLI package and the skill repo are private, you need a GitHub
-**Personal Access Token** with `read:packages` **and** repo `Contents: read`
-(a classic token with `repo` + `read:packages`, or an equivalent fine-grained
-token).
-
-**1. Point the `@docsales` scope at GitHub Packages.** Add to `~/.npmrc` (or the
-project `.npmrc`):
-
-```ini
-@docsales:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-```
-
-**2. Export the token** so npm (install) and the CLI (asset download) can read it:
-
-```bash
-export GITHUB_TOKEN=ghp_xxx   # also accepts $GH_TOKEN or --token
-```
+CLI to install and update Claude skills. The CLI is published to the **public
+npm registry** and the `guider` skill is distributed as a **public GitHub
+release asset** — no token required to install.
 
 ## Usage
 
 ```bash
 # Install a skill (prompts: global vs. current project)
-npx @docsales/guider skills install guider
+npx @adriansilvadonascimento/guider skills install guider
 
 # Skip the prompt with an explicit location
-npx @docsales/guider skills install guider --global    # ~/.claude/skills/user
-npx @docsales/guider skills install guider --project   # ./.claude/skills
+npx @adriansilvadonascimento/guider skills install guider --global    # ~/.claude/skills/user
+npx @adriansilvadonascimento/guider skills install guider --project   # ./.claude/skills
 
 # Pin to a specific release tag
-npx @docsales/guider skills install guider --tag v1.0.0
+npx @adriansilvadonascimento/guider skills install guider --tag v1.0.0
 
 # Verify the download against a SHA-256 digest
-npx @docsales/guider skills install guider --sha256 <hex>
-
-# Use an explicit token instead of the env var
-npx @docsales/guider skills install guider --token ghp_xxx
+npx @adriansilvadonascimento/guider skills install guider --sha256 <hex>
 
 # Update a skill (re-fetches latest, or --tag <tag> to pin)
-npx @docsales/guider skills update guider
+npx @adriansilvadonascimento/guider skills update guider
 
 # Update all installed skills
-npx @docsales/guider skills update
+npx @adriansilvadonascimento/guider skills update
 
 # List installed skills
-npx @docsales/guider skills list
+npx @adriansilvadonascimento/guider skills list
 
 # Install from a direct .skill URL (bypasses the registry)
-npx @docsales/guider skills install guider --url https://example.com/guider.skill
+npx @adriansilvadonascimento/guider skills install guider --url https://example.com/guider.skill
 ```
 
 When no location flag is given, `install` asks whether to install **globally**
@@ -62,10 +39,13 @@ When no location flag is given, `install` asks whether to install **globally**
 global so nothing hangs. Use `--global`, `--project`, or `--dir <path>` to choose
 explicitly.
 
-The installer reaches private release assets through the GitHub API (using your
-token), refuses any archive whose entries would extract outside the target
-directory (zip-slip protection), and — when `--sha256` is supplied — aborts on a
-checksum mismatch.
+The installer downloads the public release asset through the GitHub API, refuses
+any archive whose entries would extract outside the target directory (zip-slip
+protection), and — when `--sha256` is supplied — aborts on a checksum mismatch.
+
+Public GitHub API calls are anonymous and rate-limited. If you hit the limit (or
+want to install from a private fork), pass a token with `--token`, or export
+`$GITHUB_TOKEN` / `$GH_TOKEN`.
 
 ## Adding a skill to the registry
 
@@ -85,10 +65,10 @@ so every release tag must carry that asset, or `install`/`update` fails with
 npm run build
 
 # 2. Attach it to the release (create the release first if needed)
-gh release upload v1.0.1 dist/guider.skill --repo docsales/guider --clobber
+gh release upload v1.0.1 dist/guider.skill --repo AdrianSilvadoNascimento/guider --clobber
 
 # or create the release and attach in one step:
-gh release create v1.0.1 dist/guider.skill --repo docsales/guider --title v1.0.1
+gh release create v1.0.1 dist/guider.skill --repo AdrianSilvadoNascimento/guider --title v1.0.1
 ```
 
 `update` automatically serves the newest release — no code change needed.
@@ -97,9 +77,12 @@ Consumers who want reproducible installs can pin with `--tag` and `--sha256`
 
 ## Publishing the CLI (maintainers)
 
+The package targets the public npm registry (`publishConfig.access` is already
+`public`).
+
 ```bash
-# authenticate npm to GitHub Packages (token needs write:packages)
-npm publish        # publishConfig already targets npm.pkg.github.com
+npm login          # once, with your npmjs.com account
+npm publish        # publishes @adriansilvadonascimento/guider publicly
 ```
 
 Bump `version` in `package.json` before each publish.
@@ -111,3 +94,7 @@ npm install      # install deps (incl. eslint)
 npm run lint     # eslint
 npm test         # node --test
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
