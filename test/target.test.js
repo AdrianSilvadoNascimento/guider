@@ -27,9 +27,12 @@ test("promptSkillsDir honours explicit flags without prompting", async () => {
   assert.equal(await promptSkillsDir({ dir: "/x" }), "/x");
   assert.equal(await promptSkillsDir({ global: true }), GLOBAL_SKILLS_DIR);
   assert.equal(await promptSkillsDir({ project: true }), projectSkillsDir());
+  assert.equal(await promptSkillsDir({ claude: true }), GLOBAL_SKILLS_DIR);
+  assert.equal(await promptSkillsDir({ codex: true }), globalSkillsDir("codex"));
+  assert.equal(await promptSkillsDir({ codex: true, project: true }), projectSkillsDir("codex"));
 });
 
-test("promptSkillsDir falls back to global when not a TTY", async () => {
-  // The test runner's stdin is not a TTY, so this must not block.
+test("promptSkillsDir falls back to global (Claude) when not a TTY", async () => {
+  // The test runner's stdin is not a TTY, so this must not block or prompt.
   assert.equal(await promptSkillsDir({}), GLOBAL_SKILLS_DIR);
 });

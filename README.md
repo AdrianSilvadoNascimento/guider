@@ -11,10 +11,12 @@ without conversion. The CLI is published to the public npm registry and the
 ## Quick start
 
 ```bash
-# Install the guider skill for Claude (prompts: global vs. current project)
+# Install the guider skill — prompts which agent (Claude or Codex / ChatGPT),
+# then global vs. current project
 npx @adrianfsf/guider skills install guider
 
-# …or for Codex / ChatGPT (~/.codex/skills or ./.agents/skills)
+# Skip the agent prompt with a flag
+npx @adrianfsf/guider skills install guider --claude
 npx @adrianfsf/guider skills install guider --codex
 ```
 
