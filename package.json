@@ -1,7 +1,7 @@
 {
-  "name": "@adriansilvadonascimento/guider",
+  "name": "@adrianfsf/guider",
   "version": "1.1.0",
-  "description": "CLI to manage guider skills for Claude.",
+  "description": "CLI to install and manage coding-agent skills for Claude and Codex (ChatGPT).",
   "type": "module",
   "bin": {
     "guider": "bin/guider.js"

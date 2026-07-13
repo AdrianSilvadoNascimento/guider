@@ -12,27 +12,27 @@ the only difference is the destination directory.
 
 ```bash
 # Install a skill (prompts: global vs. current project)
-npx @adriansilvadonascimento/guider skills install guider
+npx @adrianfsf/guider skills install guider
 
 # Target Codex / ChatGPT instead of Claude
-npx @adriansilvadonascimento/guider skills install guider --codex
+npx @adrianfsf/guider skills install guider --codex
 
 # Skip the prompt with an explicit location
-npx @adriansilvadonascimento/guider skills install guider --global
-npx @adriansilvadonascimento/guider skills install guider --project
-npx @adriansilvadonascimento/guider skills install guider --codex --project
+npx @adrianfsf/guider skills install guider --global
+npx @adrianfsf/guider skills install guider --project
+npx @adrianfsf/guider skills install guider --codex --project
 
 # Explicit target directory (overrides --global/--project)
-npx @adriansilvadonascimento/guider skills install guider --dir ./somewhere/skills
+npx @adrianfsf/guider skills install guider --dir ./somewhere/skills
 
 # Pin to a specific release tag
-npx @adriansilvadonascimento/guider skills install guider --tag v1.0.0
+npx @adrianfsf/guider skills install guider --tag v1.0.0
 
 # Verify the download against a SHA-256 digest
-npx @adriansilvadonascimento/guider skills install guider --sha256 <hex>
+npx @adrianfsf/guider skills install guider --sha256 <hex>
 
 # Install from a direct .skill URL (bypasses the registry)
-npx @adriansilvadonascimento/guider skills install guider --url https://example.com/guider.skill
+npx @adrianfsf/guider skills install guider --url https://example.com/guider.skill
 ```
 
 When no location flag is given, `install` asks whether to install **globally**
@@ -43,22 +43,22 @@ defaults to global so nothing hangs.
 
 ```bash
 # Update one skill to its latest release (or --tag <tag> to pin)
-npx @adriansilvadonascimento/guider skills update guider
+npx @adrianfsf/guider skills update guider
 
 # Update every installed skill known to the registry
-npx @adriansilvadonascimento/guider skills update
+npx @adrianfsf/guider skills update
 
 # Update the Codex copy, or a project copy
-npx @adriansilvadonascimento/guider skills update guider --codex
-npx @adriansilvadonascimento/guider skills update guider --project
+npx @adrianfsf/guider skills update guider --codex
+npx @adrianfsf/guider skills update guider --project
 ```
 
 ## List
 
 ```bash
-npx @adriansilvadonascimento/guider skills list            # Claude, global
-npx @adriansilvadonascimento/guider skills list --project  # current project
-npx @adriansilvadonascimento/guider skills list --codex    # Codex / ChatGPT
+npx @adrianfsf/guider skills list            # Claude, global
+npx @adrianfsf/guider skills list --project  # current project
+npx @adrianfsf/guider skills list --codex    # Codex / ChatGPT
 ```
 
 ## Tokens & rate limits
@@ -68,7 +68,7 @@ anonymous requests, so if you hit the limit — or you're installing from a priv
 fork — pass a token:
 
 ```bash
-npx @adriansilvadonascimento/guider skills install guider --token ghp_xxx
+npx @adrianfsf/guider skills install guider --token ghp_xxx
 # or export it (also accepts $GH_TOKEN)
 export GITHUB_TOKEN=ghp_xxx
 ```

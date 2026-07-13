@@ -43,7 +43,7 @@ The package targets the public npm registry (`publishConfig.access` is already
 
 ```bash
 npm login          # once, with your npmjs.com account
-npm publish        # publishes @adriansilvadonascimento/guider publicly
+npm publish        # publishes @adrianfsf/guider publicly
 ```
 
 Bump `version` in `package.json` before each publish.

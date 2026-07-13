@@ -12,10 +12,10 @@ without conversion. The CLI is published to the public npm registry and the
 
 ```bash
 # Install the guider skill for Claude (prompts: global vs. current project)
-npx @adriansilvadonascimento/guider skills install guider
+npx @adrianfsf/guider skills install guider
 
 # …or for Codex / ChatGPT (~/.codex/skills or ./.agents/skills)
-npx @adriansilvadonascimento/guider skills install guider --codex
+npx @adrianfsf/guider skills install guider --codex
 ```
 
 Then, in your agent, run `/guider init` to onboard the skill to your project.
