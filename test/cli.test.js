@@ -67,6 +67,20 @@ test("--project installs into the current project's .claude/skills", async () =>
   }
 });
 
+test("--codex --project installs into the current project's .agents/skills", async () => {
+  const projDir = fs.mkdtempSync(path.join(os.tmpdir(), "guider-codex-"));
+  try {
+    const { code } = await run(
+      ["skills", "install", "guider", "--codex", "--project", "--url", baseUrl],
+      { cwd: projDir },
+    );
+    assert.equal(code, 0);
+    assert.ok(fs.existsSync(path.join(projDir, ".agents", "skills", "guider", "SKILL.md")));
+  } finally {
+    fs.rmSync(projDir, { recursive: true, force: true });
+  }
+});
+
 test("list reads the folded block-scalar description", async () => {
   const { code, stdout } = await run(["skills", "list", "--dir", tmpDir]);
   assert.equal(code, 0);

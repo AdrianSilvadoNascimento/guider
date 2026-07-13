@@ -15,7 +15,8 @@ Work through five phases in order. Don't write any project file until Phase 5.
 
 Look before you ask. Check for source files, a VCS history, a manifest
 (`package.json`, `pyproject.toml`/`requirements.txt`, `go.mod`, `Cargo.toml`,
-`pom.xml`, `Gemfile`, `composer.json`, etc.), and an existing `CLAUDE.md`.
+`pom.xml`, `Gemfile`, `composer.json`, etc.), and an existing `AGENTS.md` or
+`CLAUDE.md`.
 
 - **Brownfield** (code already exists): go to Phase 2.
 - **Greenfield** (empty or near-empty): skip the inventory. Ask the user what
@@ -24,8 +25,8 @@ Look before you ask. Check for source files, a VCS history, a manifest
   aspirations; brownfield standards are descriptions of reality plus a few
   upgrades. Be honest about which you're writing.
 
-If a non-Guider `CLAUDE.md` already exists, read it fully — you'll merge into
-it, not replace it.
+If a non-Guider `AGENTS.md` or `CLAUDE.md` already exists, read it fully —
+you'll merge into it, not replace it.
 
 ---
 
@@ -156,11 +157,11 @@ on — don't pad the interview.
 
 Before writing anything, lay out exactly what you'll create or change:
 
-- which docs (`CLAUDE.md`, `ARCHITECTURE.md`, `APPLICATION.md`, any extras) and
-  the headline content of each;
+- which docs (`AGENTS.md` + its thin `CLAUDE.md` importer, `ARCHITECTURE.md`,
+  `APPLICATION.md`, any extras) and the headline content of each;
 - which gates you'll scaffold (formatter/linter config, pre-commit hooks,
   secret scan, CI workflow) and which already exist and will be left alone;
-- the Karpathy merge into `CLAUDE.md`;
+- the Karpathy merge into `AGENTS.md`;
 - the recommended managed services (Upstash for cache, Trigger.dev for workers,
   Pusher for realtime) where they fit, and the Impeccable recommendation.
 
@@ -175,24 +176,32 @@ Now write, using the templates in `assets/templates/`. Rules:
 1. **Fill, don't stub.** Replace every placeholder with a real answer from the
    scan or interview. If a section genuinely doesn't apply (no frontend, no
    state machines), remove it rather than leaving a `TODO`.
-2. **`CLAUDE.md` stays short.** Karpathy principles, the project's hard rules,
-   and a pointer table to the sibling docs. Detail lives in the siblings.
-3. **Merge the Karpathy principles.** Prefer fetching the canonical file the
-   way its repo documents it, then appending under a clearly attributed
-   heading:
+2. **`AGENTS.md` is the canonical entry point; keep it short.** Karpathy
+   principles, the project's hard rules, and a pointer table to the sibling
+   docs. Detail lives in the siblings. Then write a **thin `CLAUDE.md`** that
+   imports it (from `assets/templates/CLAUDE.md.tmpl`) — it must contain
+   `@AGENTS.md` and no duplicated rules, so Claude Code loads the same standards
+   while Codex / ChatGPT reads `AGENTS.md` natively. One source of truth, two
+   entry points.
+3. **Merge the Karpathy principles into `AGENTS.md`.** Prefer fetching the
+   canonical file the way its repo documents it, then appending under a clearly
+   attributed heading:
    ```bash
    # canonical source: https://github.com/multica-ai/andrej-karpathy-skills
    curl -fsSL https://github.com/multica-ai/andrej-karpathy-skills/raw/refs/heads/main/CLAUDE.md \
-     >> CLAUDE.md
+     >> AGENTS.md
    ```
    If there's no network access, use the bundled paraphrase in
-   `assets/karpathy-principles.md` instead, with the same attribution. When a
-   `CLAUDE.md` already exists, merge these in as a section — don't duplicate or
-   clobber the user's existing content.
+   `assets/karpathy-principles.md` instead, with the same attribution. When an
+   `AGENTS.md` (or a full `CLAUDE.md`) already exists, merge these in as a
+   section — don't duplicate or clobber the user's existing content. If the
+   project already keeps its standards in a full `CLAUDE.md`, you may keep that
+   as the canonical file and add a thin `AGENTS.md` pointing at it instead —
+   either direction is fine as long as the rules live in exactly one file.
 4. **Split arch/flows out.** Put bounded contexts, layering, folder patterns,
    state machines, and data-integrity decisions in `ARCHITECTURE.md`; put the
    product/domain/flows narrative in `APPLICATION.md`; leave pointers in
-   `CLAUDE.md`.
+   `AGENTS.md`.
 5. **Scaffold gates surgically** (see `references/quality-gates.md` for the
    per-stack specifics). Only add what's missing; edit existing configs in
    place with a visible diff. Never install dependencies or run hooks during

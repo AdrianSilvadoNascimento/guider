@@ -1,7 +1,7 @@
 # Code conventions
 
 These are stack-agnostic defaults. `/guider init` adapts them to the project
-and writes the project-specific version into `CLAUDE.md` / `ARCHITECTURE.md`.
+and writes the project-specific version into `AGENTS.md` / `ARCHITECTURE.md`.
 The concrete example at the end shows one full instantiation.
 
 ## Naming — descriptive always

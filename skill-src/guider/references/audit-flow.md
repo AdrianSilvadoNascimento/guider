@@ -50,8 +50,9 @@ silently sampling.
 
 You can't audit against standards you haven't read. Before scanning:
 
-1. **Read the project's own docs.** If a Guider-authored `CLAUDE.md` exists, read
-   it and its siblings (`ARCHITECTURE.md`, `APPLICATION.md`, any `TESTING.md` /
+1. **Read the project's own docs.** If Guider-authored standards exist
+   (`AGENTS.md`, or a `CLAUDE.md` that imports it), read them and their siblings
+   (`ARCHITECTURE.md`, `APPLICATION.md`, any `TESTING.md` /
    `SECURITY.md`). **The project's documented choices are the contract** and
    override the Guider defaults everywhere they speak — its line length, its
    folder convention, which tables have RLS, which operations are idempotent, its
@@ -59,7 +60,8 @@ You can't audit against standards you haven't read. Before scanning:
 2. **Fall back to defaults for the gaps.** Where the docs are silent, audit
    against the Guider defaults in `conventions.md`, `data-integrity.md`,
    `infrastructure.md`, `architecture.md`, and `quality-gates.md`.
-3. **If there's no Guider `CLAUDE.md` at all**, say so plainly: you're auditing
+3. **If there are no Guider standards at all** (no `AGENTS.md` / `CLAUDE.md`),
+   say so plainly: you're auditing
    against generic defaults, the results will be noisier, and `/guider init`
    would make every future audit sharper. Offer it, then proceed against
    defaults anyway — a useful audit doesn't require init first.

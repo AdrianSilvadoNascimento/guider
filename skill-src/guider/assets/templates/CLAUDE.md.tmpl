@@ -1,52 +1,15 @@
 <!--
-  CLAUDE.md template (filled by `/guider init`).
-  Keep this file SHORT — it is read on every task. Detail goes in the sibling
-  docs and is reached through the pointer table. Remove sections that don't
-  apply rather than leaving placeholders.
+  CLAUDE.md — thin entry point for Claude Code.
+  The project's engineering standards are tool-neutral and live in AGENTS.md
+  (the single source of truth). This file imports AGENTS.md so Claude Code loads
+  it automatically. Keep any strictly Claude-specific notes below the import;
+  everything shared belongs in AGENTS.md, not here.
 -->
 
 # CLAUDE.md — {{PROJECT_NAME}}
 
-How we build things here. Read this first; follow the pointers for detail.
+This project's engineering standards are tool-neutral and live in **`AGENTS.md`**.
+Read and follow it on every change — it is imported below so it loads
+automatically:
 
-## Prime directive
-
-Simplicity above all. The minimum that solves the problem, named clearly,
-changed surgically. Every rule below bends to this one.
-
-## Behavioral principles
-
-<!-- Merge the canonical multica-ai/andrej-karpathy-skills CLAUDE.md here
-     (fetched during init), or the bundled paraphrase if offline. Attribute it. -->
-{{KARPATHY_PRINCIPLES}}
-
-## Hard rules (worth interrupting a change over)
-
-<!-- The handful the team most wants enforced. Examples — keep the project's real ones: -->
-- Descriptive names always; in `map`/`filter`/etc. use the singular. Rename
-  cryptic identifiers in code you touch. ({{NAMING_STRICTNESS}})
-- Never compare against a string literal where a domain enum exists; never show
-  a raw enum key to a user — translate via {{LABEL_MAP_LOCATION}}.
-- Never reach past the repository layer; never expose a persistence entity —
-  map to a DTO.
-- Concurrent writes go in a transaction; critical operations
-  ({{CRITICAL_OPS}}) are idempotent.
-- Never swallow an error; log with context and propagate or return typed.
-- Line length: {{LINE_LENGTH}} (enforced by {{FORMATTER}}).
-- Tests: fast = `{{FAST_TEST_CMD}}` (run before pushing), full =
-  `{{FULL_TEST_CMD}}` (CI).
-
-## Where to look
-
-| For… | See |
-|---|---|
-| Architecture, bounded contexts, state machines, folders, RLS/encryption decisions | `ARCHITECTURE.md` |
-| What the product is — domains, key flows, integrations, environments | `APPLICATION.md` |
-| Full code conventions | `ARCHITECTURE.md` / `{{CONVENTIONS_DOC}}` |
-{{EXTRA_DOC_POINTERS}}
-
-## Gates
-
-Format + lint + secret-scan on commit; type-check + fast tests on push;
-lint + type + fast tests + secret scan on every PR; full tests + audit on merge.
-See `{{CI_DOC_OR_PATH}}`. {{IMPECCABLE_NOTE}}
+@AGENTS.md

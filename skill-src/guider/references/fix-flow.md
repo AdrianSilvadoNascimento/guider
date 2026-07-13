@@ -70,7 +70,7 @@ Work area by area so related edits land together and the diff reads coherently.
 ## Phase 3 — Verify
 
 Mechanical edits at scale introduce mechanical mistakes. After applying, run the
-project's gates — the ones documented in its `CLAUDE.md` / `quality-gates.md`:
+project's gates — the ones documented in its `AGENTS.md` / `quality-gates.md`:
 formatter check, linter, type-check, and the **fast** test suite. Don't run the
 full/e2e suite unless the user asks; that's a CI-weight gate.
 

@@ -11,8 +11,8 @@ description: >-
   API docs (OpenAPI/Swagger generated from code and drift-gated). Also trigger
   on "set conventions", "harden this repo", "audit against standards", "apply
   the audit fixes", "document the API"; on `/guider init`, `/guider audit`,
-  `/guider fix`, or `/guider spec`; on requests to generate a CLAUDE.md /
-  ARCHITECTURE.md / APPLICATION.md; or when asked to follow the project's
+  `/guider fix`, or `/guider spec`; on requests to generate an AGENTS.md /
+  CLAUDE.md / ARCHITECTURE.md / APPLICATION.md; or when asked to follow the project's
   established standards while writing code.
 ---
 
@@ -20,9 +20,13 @@ description: >-
 
 Guider makes one promise: **a codebase should be easy to do the right thing in
 and hard to do the wrong thing in.** It does this by writing the project's
-standards down where Claude reads them (`CLAUDE.md` + companion docs), wiring
-machines to enforce them (linters, hooks, CI), and then holding the line on
-every change.
+standards down where your coding agent reads them (a tool-neutral `AGENTS.md`,
+imported by `CLAUDE.md`, plus companion docs), wiring machines to enforce them
+(linters, hooks, CI), and then holding the line on every change.
+
+Guider is agent-neutral. It targets **Claude** and **Codex / ChatGPT** (both
+read the same `SKILL.md` format and the same generated docs), so the standards it
+writes and enforces apply whichever agent is doing the work.
 
 Four subcommands plus an always-on mode:
 
@@ -43,8 +47,9 @@ Four subcommands plus an always-on mode:
    absent and improves it (closes gaps, kills spec↔code drift) if it's present,
    so the spec is generated from the code and drift-gated in CI. See
    `references/spec-flow.md`.
-5. **Always-on guidance** — once a project has a Guider-authored `CLAUDE.md`,
-   apply these standards to every change you make: name things well, keep diffs
+5. **Always-on guidance** — once a project has Guider-authored standards
+   (`AGENTS.md`, imported by `CLAUDE.md`), apply them to every change you make:
+   name things well, keep diffs
    surgical, use enums not string literals, never expose ORM entities, wrap
    critical writes in transactions, and so on.
 
@@ -109,8 +114,9 @@ for the standard.
 
 ## When applying standards during normal work
 
-If the repo already has a Guider-authored `CLAUDE.md`, read it first; the
-project's own choices override the defaults here. Then hold to these, loading
+If the repo already has Guider-authored standards (`AGENTS.md`, or a `CLAUDE.md`
+that imports it), read them first; the project's own choices override the
+defaults here. Then hold to these, loading
 the matching reference only when a change actually touches that area:
 
 | Area | Default stance | Reference |
@@ -129,21 +135,30 @@ project's docs is the real contract — when they disagree, the project wins.
 
 ## The documents Guider maintains
 
-Guider keeps the root `CLAUDE.md` short and routes detail into siblings, so the
-always-loaded context stays cheap and each doc has one job:
+Guider keeps a short, tool-neutral entry point and routes detail into siblings,
+so the always-loaded context stays cheap and each doc has one job:
 
-- **`CLAUDE.md`** — the entry point. Karpathy principles + the project's
-  hard rules (the ones worth interrupting a change over) + a pointer table to
-  the docs below. Keep it tight; it is read on every task.
+- **`AGENTS.md`** — the canonical, agent-neutral entry point (single source of
+  truth). Karpathy principles + the project's hard rules (the ones worth
+  interrupting a change over) + a pointer table to the docs below. Codex /
+  ChatGPT and most agents read it natively. Keep it tight; it is read on every
+  task.
+- **`CLAUDE.md`** — a thin Claude Code entry point that **imports** `AGENTS.md`
+  (`@AGENTS.md`) so Claude loads the same standards automatically. It holds no
+  duplicated rules — only, if ever, strictly Claude-specific notes.
 - **`ARCHITECTURE.md`** — bounded contexts, layering, folder patterns, state
   machines, data-integrity decisions (RLS/encryption), how the pieces fit.
 - **`APPLICATION.md`** — what the product *is*: domains, key flows (upload,
   auth, billing…), external integrations, environments.
 - Add more as needed (`TESTING.md`, `SECURITY.md`, `DATA.md`) and link them
-  from `CLAUDE.md`. The rule is: `CLAUDE.md` points, the siblings explain.
+  from `AGENTS.md`. The rule is: `AGENTS.md` points, the siblings explain, and
+  `CLAUDE.md` just imports `AGENTS.md`.
 
-Templates for all three live in `assets/templates/`. `init` fills them in from
-what it learns; it never ships a doc full of unanswered placeholders.
+Standards and detail live in **one** place per topic — never copied into both
+`AGENTS.md` and `CLAUDE.md`. Templates live in `assets/templates/`
+(`AGENTS.md.tmpl`, `CLAUDE.md.tmpl`, `ARCHITECTURE.md.tmpl`, `APPLICATION.md.tmpl`).
+`init` fills them in from what it learns; it never ships a doc full of unanswered
+placeholders.
 
 ## Impeccable (frontend design)
 
@@ -157,8 +172,9 @@ command and how to wire its detector into CI.
 ## Editing existing files vs. creating new ones
 
 When Guider modifies a file the user already has (a config, an existing
-`CLAUDE.md`, a CI workflow), it edits in place and shows a reviewable diff — it
-does not overwrite wholesale or regenerate from scratch. Merging into an
-existing `CLAUDE.md` means adding/updating sections, preserving the user's
+`AGENTS.md` / `CLAUDE.md`, a CI workflow), it edits in place and shows a
+reviewable diff — it does not overwrite wholesale or regenerate from scratch.
+Merging into an existing entry-point doc means adding/updating sections,
+preserving the user's
 prose. This mirrors the "surgical changes" principle: every changed line should
 trace to something the user asked for.
