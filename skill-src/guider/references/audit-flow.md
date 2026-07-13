@@ -44,6 +44,96 @@ is large and no scope was given, say what you're covering (and what you're
 skipping, e.g. generated code, vendored deps, `node_modules`) rather than
 silently sampling.
 
+**"Whole repository" means every file, not just the ones shaped like
+`conventions.md`'s examples.** It's tempting to scan the files that look like the
+areas below — services, controllers, components — and skip the rest because
+they don't fit a familiar pattern. That's exactly how real defects hide. Unless
+explicitly scoped away, also read:
+
+- **Migrations / schema / seed SQL** — idempotency, destructive statements
+  without a guard, a column added in code but never in the migration.
+- **Scripts, one-off tooling, `Makefile`/CI YAML** — the same conventions apply
+  to a script that runs in prod as to application code.
+- **Data snapshots, fixtures, backups checked into the repo** (`*.json`,
+  `*.csv` dumps) — a stale snapshot, or one that reveals a fix never
+  generalized (see "Census, not incident" below).
+- **Planning/incident docs** (`docs/*.md`, `PLAN*.md`, postmortems) — these
+  often *state* a rule was generalized while the linked remediation only
+  touched the named instances. Read the remediation, not just the prose.
+- **If the project persists state in a database**, treat the live data itself
+  as something to audit, not just the code that writes it — see "Census, not
+  incident."
+
+Don't let "audit the whole repository" quietly narrow to "audit the files that
+look auditable."
+
+## Census, not incident
+
+Bound this before applying it: it's for **medium/high severity** findings — a
+real invariant violation, a broken-its-own-rule contract violation — not every
+stylistic or advisory pattern. A low-severity nit that happens to repeat twice
+doesn't earn a full-repo grep or a whole-table scan; note that other instances
+likely exist and move on. This is a bigger flashlight for real problems, not a
+mandate to boil the ocean on every finding.
+
+The common way a real finding under-delivers: it correctly diagnoses a *class*
+of problem and states the general rule in prose — then the actual check (or,
+downstream, the fix) only touches the specific instance(s) that surfaced it.
+The rule reads as generalized; the remediation reads as one-off.
+
+For a medium/high finding that describes a pattern (not a one-off typo):
+
+- **Attempt the sweep before filing the finding.** Code pattern → grep/search
+  the **entire** scope (see above) for other occurrences of the same shape,
+  not only the file(s) where it was first spotted. Data pattern → run a
+  **read-only** query across the **whole** table/collection for the
+  invariant, not just the rows a known incident already named.
+- **Report the delta**: "N total instances found (M already known from the
+  reported incident, N−M new)."
+- Only mark a finding "incomplete (not swept)" when the read-only tooling to
+  do the sweep genuinely isn't available in this session — never as a
+  substitute for a grep/query you could have run.
+- Dead data left by removed code (a legacy marker, an orphaned enum/`source`
+  value) is not an exemption — rows carrying it still count toward a census
+  sweep for a currently-live invariant; don't treat "this came from an old
+  code path" as "already handled."
+- If the sweep is a full-table scan against a large or live production
+  database, bound it (a row-count check first, a `LIMIT`/sample, a read
+  replica if one exists) or flag the cost and confirm before running it —
+  read-only doesn't mean free.
+
+This is inspection only — sweeping means searching and querying, never
+writing.
+
+---
+
+## Phase 0 — absorb findings from elsewhere (optional)
+
+`/guider audit` doesn't have to start from a blank scan. The user may hand it
+findings that came from somewhere else — a pasted incident writeup, another
+agent's investigation, a `/code-review` or `/security-review` pass, a
+production bug report. Treat each one exactly like a self-found violation, not
+a fait accompli to rubber-stamp:
+
+1. **Establish the contract first** (Phase 1) if you haven't already —
+   restating a finding as a rule means citing the convention it breaks, which
+   requires knowing what the project's docs (or the defaults) actually say.
+2. **Restate it as a rule**, the same way any other finding cites the
+   convention it breaks (Phase 3's `rule` field). If the source already
+   generalized it, use that generalization; if it only described the specific
+   instance, generalize it yourself.
+3. **Sweep for it** (see "Census, not incident" above, same severity bar) —
+   the point of folding an external finding in is to check whether it's
+   actually contained to the reported instance(s) or wider.
+4. **Fold it into the same structured report** as Phase 3 shapes below, so
+   `/guider fix` can act on it identically to anything the audit found on its
+   own — no separate track, no special-casing.
+
+This is also how a codebase's contract grows over time: an issue found once,
+by any means, becomes a rule the *next* audit checks for automatically (see
+`fix-flow.md`'s recording step) — instead of being refought each time it
+resurfaces under a new name.
+
 ---
 
 ## Phase 1 — Establish the contract
@@ -108,6 +198,22 @@ area, the recurring violations to grep for and reason about:
 - Tenant-scoped tables relying on `WHERE` filters instead of RLS, where the docs
   say isolation matters.
 - External API calls with no retry/backoff; a swallowed timeout.
+- A documented data invariant (a column that must never be null, an entity
+  that must have exactly one related X, two states that must never coexist)
+  checked only against the rows a known incident named, never swept against
+  the full table — see "Census, not incident."
+- Dead data left behind by removed code — an enum value, a `source`/`type`
+  marker, a column a since-deleted function used to populate — that a reader
+  could mistake for still-live behavior.
+
+**Migrations, scripts & data artifacts** (`data-integrity.md`, "Census, not incident" above)
+- A migration or seed script held to a looser standard than application
+  code — no idempotency guard, a destructive statement with no safety check.
+- A plan/incident doc whose prose generalizes a rule but whose linked
+  remediation only ever touches the originally-named instance(s) — the
+  incident-vs-census gap itself.
+- A data snapshot/fixture/backup checked into the repo that's stale, or that
+  documents a fix which was never swept against the rest of the table.
 
 **Runtime infrastructure** (`infrastructure.md`)
 - Cache entries set with no TTL; cache updated in place on write instead of
@@ -159,11 +265,18 @@ Every finding carries exactly these fields, so `fix` can act on it mechanically:
 - **resolution** — the precise change to make, concrete enough to apply without
   re-deciding. Name the helper/enum/constant to use if one already exists.
 - **risk** — `safe` for mechanical, behavior-preserving edits (renames, enum
-  extraction, adding a TTL, magic-string→constant, DTO mapping, DI wiring), or
-  `risky` for anything touching a DB migration, RLS policy, behavior-changing
-  transaction wrapping, schema, or encryption. **This field decides how `fix`
-  treats the finding** — `fix` applies `safe` automatically and pauses on
-  `risky` — so classify deliberately.
+  extraction, adding a TTL, magic-string→constant, DTO mapping, DI wiring,
+  recording a generalized rule in the project's contract docs — see
+  `fix-flow.md`'s "Closing the loop"), or `risky` for anything touching a DB
+  migration, RLS policy, behavior-changing transaction wrapping, schema, or
+  encryption. **This field decides how `fix` treats the finding** — `fix`
+  applies `safe` automatically and pauses on `risky` — so classify deliberately.
+
+For a finding shaped by "Census, not incident," put the sweep result in
+**location** (e.g. "src/lib/foo.ts:42, and 11 more — see list" or "23 rows
+beyond the 4 named in the incident, `users` table") rather than inventing a
+new field — the shape stays the same for every finding, whether self-found or
+absorbed via Phase 0.
 
 ---
 
@@ -173,6 +286,11 @@ Print the findings to the conversation, grouped by area, with each field above.
 Lead with a one-paragraph summary: total findings, the count by severity, and
 the count by risk class (`safe` vs `risky`) — that breakdown previews exactly how
 much `/guider fix` will apply automatically versus gate.
+
+For any finding shaped by "Census, not incident" or absorbed via Phase 0,
+state what was swept — the query/grep and its scope — and the resulting
+count, not just the finding itself. That's the evidence the sweep actually
+happened rather than being asserted.
 
 Close by telling the user they can run **`/guider fix`** to apply the
 resolutions (safe ones automatically, risky ones with confirmation), or scope it.

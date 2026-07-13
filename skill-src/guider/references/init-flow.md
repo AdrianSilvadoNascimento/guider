@@ -137,6 +137,17 @@ Cover these, skipping any the scan already answered:
 - Secret-leak scanning: confirm adding it if absent.
 - CI provider, if not detected.
 
+**CI automation (optional)** — only ask if the CI provider is GitHub Actions
+(this specific mode is GitHub-specific; see `ci-automation.md`)
+- Want `/guider audit` to run automatically on every PR and post the findings
+  as a comment, instead of (or in addition to) running it by hand? If yes,
+  gather the four things `ci-automation.md`'s template needs: which auth
+  secret they'll use (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`), the
+  marketplace repo + name this session's `guider` was actually loaded from,
+  whether this repo has bot-opened PRs (and if so, the bot's name), and where
+  its other workflows live. If no, skip the rest of this round entirely — it's
+  opt-in, not a default.
+
 **API documentation**
 - If there's an HTTP API and no generated OpenAPI spec (or a hand-written one
   that can drift), propose setting it up the Guider way: generated from the code
@@ -161,6 +172,8 @@ Before writing anything, lay out exactly what you'll create or change:
   `APPLICATION.md`, any extras) and the headline content of each;
 - which gates you'll scaffold (formatter/linter config, pre-commit hooks,
   secret scan, CI workflow) and which already exist and will be left alone;
+- whether you're adding the optional CI-automated `/guider audit` workflow
+  (`ci-automation.md`), if the user opted in;
 - the Karpathy merge into `AGENTS.md`;
 - the recommended managed services (Upstash for cache, Trigger.dev for workers,
   Pusher for realtime) where they fit, and the Impeccable recommendation.
@@ -219,7 +232,16 @@ Now write, using the templates in `assets/templates/`. Rules:
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
+9. **Scaffold the CI-automated audit workflow** only if the user opted in
+   (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
+   interview answers and write it to the project's workflow directory — keep
+   only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
+   that matches their answer, delete the `allowed_bots` line entirely if they
+   have no bot-opened PRs, and only add the private-marketplace cross-repo
+   token steps if they confirmed that repo is private. Propose the
+   secret-creation command; never run it or ask for the raw value.
 
 Finish with a short summary: the files created/edited, the commands the user
-should run to activate the gates (install hooks, enable CI), and the one or two
-follow-ups worth doing next. Then stop — don't keep generating.
+should run to activate the gates (install hooks, enable CI, add the secret if
+step 9 applied), and the one or two follow-ups worth doing next. Then stop —
+don't keep generating.

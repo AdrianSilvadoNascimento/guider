@@ -101,3 +101,27 @@ source, which operations are transactional, which are idempotent and where the
 keys come from, and the retry/cache policy for each external integration. The
 point is that the next person — or the next Claude — can see the guarantees
 without reverse-engineering them from the code.
+
+## Auditing existing data — census, not incident
+
+Everything above is about guaranteeing integrity going forward — RLS,
+transactions, idempotency for new writes. None of it tells you whether data
+already in the table honors those guarantees today. It often doesn't: a
+guarantee added later doesn't retroactively fix rows written before it
+existed, and a one-off incident fix tends to repair only the row(s) that
+paged someone.
+
+When auditing (not building) a system with persisted state:
+
+- Treat a documented invariant ("a user has exactly one primary email", "an
+  order never has both a refund and a pending charge") as something to check
+  against the **actual data**, with a read-only query across the whole
+  table — not just the rows a bug report already named.
+- A finding that generalizes the rule in its writeup but only remediates the
+  originally-reported rows is incomplete — the gap between "rows we know
+  about" and "rows that actually violate the rule" is usually where the next
+  incident comes from.
+- Report the delta explicitly: how many rows violate the invariant in total,
+  versus how many were already known. See `audit-flow.md`'s "Census, not
+  incident" for how this shapes the finding (including the severity bar and
+  the production-query cost caveat).
