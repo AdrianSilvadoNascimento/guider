@@ -21,6 +21,12 @@ Beyond the subcommands, once a project has Guider-authored standards the skill
 applies them to **every** change: descriptive names, surgical diffs, enums over
 string literals, DTO boundaries, transactions around critical writes, and so on.
 
+`/guider audit` can also run unattended: `init` offers an *optional* GitHub
+Actions mode that comments the audit automatically on every PR, so nobody has
+to remember to run it by hand. It's entirely opt-in and needs exactly one
+repo secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`) — standalone use
+of the subcommands needs none of it. See `references/ci-automation.md`.
+
 ## The documents Guider maintains
 
 Guider keeps a short, tool-neutral entry point and routes detail into siblings,

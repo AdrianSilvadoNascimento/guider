@@ -81,6 +81,36 @@ change.
 
 ---
 
+## Closing the loop — record generalized rules durably
+
+A finding that came from "Census, not incident" (`audit-flow.md`) or was
+absorbed from an external source (Phase 0 there) is, by definition,
+medium/high severity — and represents more than the instances just fixed:
+it's a rule the project didn't have written down before. Once its
+resolutions are applied (including any `risky` ones the user approved),
+record the generalization as its own `safe` action (per `audit-flow.md`'s
+Phase 3 risk taxonomy) in the project's own contract docs:
+
+- If the project's `AGENTS.md` (or a `CLAUDE.md` that imports it, or a
+  sibling like `ARCHITECTURE.md`) already keeps a running list of hard-won
+  rules/invariants, add one entry there in the same voice and format the
+  existing entries use — cite the concrete incident that surfaced it and
+  state the general rule, the same way the existing entries do.
+- If no such section exists yet, don't invent a new doc format for one
+  finding; add a short "Lessons" section to `ARCHITECTURE.md` (or wherever
+  `/guider init` would have put it) and note that future entries should
+  accumulate there.
+- Low-severity findings that only got a lightweight sweep note (not a full
+  census) don't get a durable entry — this is for the real, medium/high
+  rules, not every observation.
+
+The payoff: the next `/guider audit` reads this doc in its own Phase 1 ("read
+the project's own docs") — so a rule learned once, from any source, is
+checked for automatically from then on, instead of relying on someone
+remembering to re-flag it.
+
+---
+
 ## Phase 4 — Summary
 
 Close with a clear ledger:

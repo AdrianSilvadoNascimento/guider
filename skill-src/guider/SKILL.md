@@ -81,16 +81,25 @@ Do **not** start writing files. Read `references/init-flow.md` and follow it
 end to end. The short version: detect greenfield vs. brownfield, inventory the
 stack, report what you found, interview the user on the gaps, confirm, then
 generate docs and gates. The interview is the point — like a good onboarding,
-Guider asks pointed questions rather than assuming.
+Guider asks pointed questions rather than assuming. Running `/guider audit`
+by hand is always enough on its own — `init` also offers an *optional* CI mode
+that comments the audit automatically on every PR; see
+`references/ci-automation.md` if the user wants it.
 
 ## When the user runs `/guider audit`
 
 Do **not** change anything — an audit is read-only. Read
 `references/audit-flow.md` and follow it end to end: establish the contract
-(the project's Guider docs, falling back to the defaults), scan the codebase by
-area, and print a precise findings report where every finding is anchored to a
-`file:line`, cites the rule it breaks, names a concrete resolution, and is tagged
-`safe` or `risky`. Then stop and point the user at `/guider fix`.
+(the project's Guider docs, falling back to the defaults), scan the whole
+repository by area — including migrations, scripts, docs, and data artifacts,
+not just conventionally-shaped source files — folding in any findings handed
+to it from elsewhere (a pasted incident, another agent's investigation, a
+`/code-review`/`/security-review` pass), and print a precise findings report
+where every finding is anchored to a `file:line` (or a data location), cites
+the rule it breaks, names a concrete resolution, and is tagged `safe` or
+`risky`. A finding that names a real pattern gets swept against its full
+population, not just the instances already known. Then stop and point the
+user at `/guider fix`.
 
 ## When the user runs `/guider fix`
 
