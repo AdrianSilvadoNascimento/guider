@@ -2,22 +2,18 @@
 name: guider
 description: >-
   Establishes and enforces engineering conventions, quality gates, and
-  architectural guardrails for a codebase, and onboards itself to an existing
-  project via `/guider init`. Use this skill whenever the user wants to set up
-  or apply project standards: code conventions, naming, linters, formatters,
-  pre-commit hooks, secret-leak scanning, CI gates, data integrity (RLS,
-  encryption, transactions, idempotency), avoiding race conditions, replacing
-  string-literal comparisons with enums/domains, bounded contexts and state
-  machines, folder structure, fast/full test split, line length, responsibility
-  separation, DRY, and API documentation (OpenAPI/Swagger specs generated from
-  code and drift-gated). Also trigger when the user says "guide me", "set
-  conventions", "harden this repo", "audit my codebase against standards", "find
-  inconsistencies", "apply the audit fixes", "document the API", "set up
-  OpenAPI/Swagger", runs `/guider init`, `/guider audit`, `/guider fix`, or
-  `/guider spec`, asks to generate or update a CLAUDE.md / ARCHITECTURE.md /
-  APPLICATION.md, or asks Claude to follow the project's established standards
-  while writing code. Prefer this skill over ad-hoc advice any time the request
-  touches "how we build things here".
+  architectural guardrails for a codebase, and onboards itself via `/guider
+  init`. Use whenever the user wants to set up or apply project standards:
+  conventions, naming, linters, formatters, pre-commit hooks, secret scanning,
+  CI gates, data integrity (RLS, encryption, transactions, idempotency, race
+  conditions), enums over string literals, bounded contexts and state machines,
+  folder structure, fast/full test split, responsibility separation, DRY, and
+  API docs (OpenAPI/Swagger generated from code and drift-gated). Also trigger
+  on "set conventions", "harden this repo", "audit against standards", "apply
+  the audit fixes", "document the API"; on `/guider init`, `/guider audit`,
+  `/guider fix`, or `/guider spec`; on requests to generate a CLAUDE.md /
+  ARCHITECTURE.md / APPLICATION.md; or when asked to follow the project's
+  established standards while writing code.
 ---
 
 # Guider
