@@ -16,6 +16,8 @@
 #   - Keep exactly ONE of the two `with:` auth lines below; delete the other.
 #   - Delete the `allowed_bots` line entirely if this repo has no bot-opened
 #     PRs (the common case) — don't leave it commented out.
+#   - Set `--model` to the interview's answer, or leave the line out entirely
+#     to take whatever claude-code-action defaults to.
 #   - Write the result to this project's own workflow directory (usually
 #     `.github/workflows/`, confirm rather than assume) and delete this
 #     header comment once filled.
@@ -83,5 +85,12 @@ jobs:
             create commits — you have no write access to contents anyway. If the
             audit finds nothing, post a short comment saying so instead of
             staying silent.
+          # This is a diff-scoped convention check — matching a PR's changes
+          # against already-documented rules, not open-ended architectural
+          # reasoning. Runs on every PR, so a lighter/cheaper model tier
+          # usually does the job at a fraction of the cost; only pick a
+          # stronger one if this project's audits need deeper judgment.
+          # Delete the line entirely to take claude-code-action's default.
           claude_args: |
             --max-turns 50
+            --model {{MODEL}}
