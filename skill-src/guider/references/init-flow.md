@@ -196,7 +196,28 @@ Now write, using the templates in `assets/templates/`. Rules:
    `@AGENTS.md` and no duplicated rules, so Claude Code loads the same standards
    while Codex / ChatGPT reads `AGENTS.md` natively. One source of truth, two
    entry points.
-3. **Merge the Karpathy principles into `AGENTS.md`.** Prefer fetching the
+3. **If the pointer model still doesn't fit the budget, extract further —
+   never `@import` your way out of it.** A long list of hard-won invariants is
+   the usual culprit: each one earns its place (cutting one feels like losing
+   safety, not trimming fat), so the canonical file can stay oversized even
+   after every other section already points elsewhere.
+   - Move the list itself, verbatim, into a dedicated companion doc (e.g.
+     `PRINCIPLES.md`). This is a relocation, not a deletion — verify a
+     before/after count so nothing goes missing in the move.
+   - Replace it in the canonical file with a scannable index: one identifier
+     per item, grouped by area, no restated prose. This only reads well when
+     identifiers are already descriptive slugs (`no-cross-currency-settle`,
+     not `RULE-042`) — the identifier IS the summary. Keep a short paraphrase
+     per line instead if the project uses opaque IDs.
+   - Don't reach for `@file` imports to fix a size problem — Claude Code and
+     similar tools inline the imported file into every session's context, so
+     an import moves bytes between files without shrinking what's actually
+     loaded. It solves a *files* problem, not a *budget* problem.
+   - Measure the real result instead of forcing a number. If the practical
+     floor (irreducible safety-critical content + the leanest honest index)
+     lands above the target, say so with the real measurements and let the
+     user choose between accepting it or cutting something concrete.
+4. **Merge the Karpathy principles into `AGENTS.md`.** Prefer fetching the
    canonical file the way its repo documents it, then appending under a clearly
    attributed heading:
    ```bash
@@ -211,28 +232,28 @@ Now write, using the templates in `assets/templates/`. Rules:
    project already keeps its standards in a full `CLAUDE.md`, you may keep that
    as the canonical file and add a thin `AGENTS.md` pointing at it instead —
    either direction is fine as long as the rules live in exactly one file.
-4. **Split arch/flows out.** Put bounded contexts, layering, folder patterns,
+5. **Split arch/flows out.** Put bounded contexts, layering, folder patterns,
    state machines, and data-integrity decisions in `ARCHITECTURE.md`; put the
    product/domain/flows narrative in `APPLICATION.md`; leave pointers in
    `AGENTS.md`.
-5. **Scaffold gates surgically** (see `references/quality-gates.md` for the
+6. **Scaffold gates surgically** (see `references/quality-gates.md` for the
    per-stack specifics). Only add what's missing; edit existing configs in
    place with a visible diff. Never install dependencies or run hooks during
    `init` — propose the install commands and let the user run them.
-6. **Recommend Impeccable** if there's a frontend, and offer to run its
+7. **Recommend Impeccable** if there's a frontend, and offer to run its
    installer.
-7. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+8. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
    tool generating the spec, where the spec file lives, the served docs route and
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-8. **Recommend the runtime infrastructure** where the interview surfaced a need
+9. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-9. **Scaffold the CI-automated audit workflow** only if the user opted in
+10. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
