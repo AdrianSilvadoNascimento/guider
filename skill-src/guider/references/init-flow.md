@@ -263,11 +263,11 @@ Now write, using the templates in `assets/templates/`. Rules:
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
    that matches their answer, delete the `allowed_bots` line entirely if
    they have no bot-opened PRs, and set `--model` to their answer (or drop
-   the line entirely if they had no preference — don't guess). The workflow installs the skill from the public
-   CLI, so there's nothing else to wire. Propose the secret-creation command;
-   never run it or ask for the raw value.
+   the line entirely if they had no preference — don't guess). The workflow
+   installs the skill from the public CLI, so there's nothing else to wire.
+   Propose the secret-creation command; never run it or ask for the raw value.
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 9 applied), and the one or two follow-ups worth doing next. Then stop —
+step 10 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.
