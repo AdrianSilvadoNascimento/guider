@@ -62,7 +62,7 @@ GitHub App, not OIDC) — don't grant it.
 
 ## Filling the template
 
-Use `assets/templates/guider-audit.yml.tmpl`. It needs three answers from the
+Use `assets/templates/guider-audit.yml.tmpl`. It needs four answers from the
 interview (Phase 3 of `init-flow.md`):
 
 1. **Which auth secret** — `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`.
@@ -72,6 +72,17 @@ interview (Phase 3 of `init-flow.md`):
    entirely rather than commenting it out.
 3. **Where do this project's other workflows live?** — usually
    `.github/workflows/`, but confirm rather than assume.
+4. **Which model should run the audit?** This job is a diff-scoped convention
+   check — matching a PR's changes against rules already written down in
+   `AGENTS.md`/`ARCHITECTURE.md`, not open-ended architectural reasoning — so
+   a lighter/cheaper model tier usually does the job at a fraction of the
+   cost of the strongest one, and it runs on every PR, so the cost compounds.
+   Recommend the cost-effective tier in whichever model family the user is
+   on as the default; only pick a stronger one if they expect their audits to
+   need deeper judgment (a large, loosely-conventioned codebase, say). If the
+   user has no preference, leave the `--model` line out of `claude_args`
+   entirely rather than guessing — `claude-code-action` picks a sensible
+   default on its own.
 
 Write the filled file, then stop — same as every other `init` gate: propose
 the secret-creation command, don't run it.
