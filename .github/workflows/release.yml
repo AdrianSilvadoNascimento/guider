@@ -18,7 +18,7 @@ on:
 
 permissions:
   contents: write # create the release and upload guider.skill
-  id-token: write # the OIDC token npm trusted publishing exchanges for a credential
+  id-token: write # required to attach npm provenance to the published package
 
 concurrency:
   group: release-${{ inputs.tag || github.ref_name }}
@@ -32,31 +32,30 @@ jobs:
       TAG: ${{ inputs.tag || github.ref_name }}
 
     steps:
+      # First, before anything is built or released. An absent secret used to
+      # surface only at the very last step, as an ENEEDAUTH telling you to run
+      # `npm adduser` — after the GitHub release had already been created,
+      # leaving the version published on GitHub but not on npm.
+      - name: NPM_TOKEN must be present
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::The NPM_TOKEN repository secret is missing or empty. Set it with: gh secret set NPM_TOKEN --repo ${GITHUB_REPOSITORY}"
+            exit 1
+          fi
+
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag || github.ref_name }}
 
-      # Deliberately no `registry-url`: that option makes setup-node write an
-      # .npmrc pinning _authToken to $NODE_AUTH_TOKEN, and an empty value there
-      # shadows the OIDC credential and fails the publish with ENEEDAUTH.
+      # `registry-url` is what makes setup-node write the .npmrc that reads
+      # $NODE_AUTH_TOKEN at publish time, so it has to stay.
       - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
-
-      # Node 22 bundles npm 10, which predates trusted publishing. Checked here,
-      # before anything is built or published, so a too-old npm can't strand the
-      # release half-done.
-      - name: npm must support trusted publishing
-        run: |
-          npm install -g npm@latest
-          need="11.5.1"
-          have="$(npm --version)"
-          if [ "$(printf '%s\n%s\n' "$need" "$have" | sort -V | head -n 1)" != "$need" ]; then
-            echo "::error::npm ${have} cannot use trusted publishing (need >= ${need})."
-            exit 1
-          fi
-          echo "npm ${have} supports trusted publishing."
+          registry-url: https://registry.npmjs.org
 
       - run: npm ci
 
@@ -110,16 +109,16 @@ jobs:
 
       # Split from the release step so that re-running a failed npm publish
       # doesn't depend on re-creating the release, and vice versa.
-      # No token: npm exchanges this job's OIDC identity for a short-lived
-      # credential, which requires a trusted publisher configured on npmjs.com
-      # for this repo AND this workflow filename. Provenance comes with it, so
-      # --provenance is not passed explicitly.
+      # NODE_AUTH_TOKEN is the name the .npmrc written by setup-node reads;
+      # `--provenance` is what `id-token: write` above is for.
       - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           name="$(npm pkg get name | tr -d '"')"
           version="$(npm pkg get version | tr -d '"')"
           if npm view "${name}@${version}" version >/dev/null 2>&1; then
             echo "${name}@${version} is already on npm — skipping publish."
           else
-            npm publish --access public
+            npm publish --provenance --access public
           fi

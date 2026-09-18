@@ -45,26 +45,29 @@ duplicated, and a version already on npm is skipped instead of failing the job.
 
 `update` automatically serves the newest release — no code change needed.
 
-### One-time setup: npm trusted publishing
+### One-time setup: the `NPM_TOKEN` secret
 
-There is **no npm token anywhere** — not in a secret, not in the workflow. npm
-exchanges the workflow's OIDC identity for a short-lived credential instead, so
-there is no long-lived key to leak or rotate, and provenance is attached for
-free.
+The publish step authenticates with an npm token held as a repository secret.
+Create the token on npmjs.com under **Access Tokens** — a *granular* token
+scoped to `@adrianfsf/guider` with **Read and write**, or a classic
+**Automation** token (that type is what bypasses 2FA on publish).
 
-It only works once npmjs.com has been told to trust this workflow. On
-[npmjs.com/package/@adrianfsf/guider/access](https://www.npmjs.com/package/@adrianfsf/guider/access),
-under **Trusted Publisher**, choose GitHub Actions and enter:
+Then set it without the value ever touching your shell history; the command
+prompts for it:
 
-| Field | Value |
-| --- | --- |
-| Organization or user | `AdrianSilvadoNascimento` |
-| Repository | `guider` |
-| Workflow filename | `release.yml` |
-| Environment | *(leave empty)* |
+```bash
+gh secret set NPM_TOKEN --repo AdrianSilvadoNascimento/guider
+```
 
-The workflow filename is part of the trust relationship — renaming
-`release.yml` breaks publishing until the trusted publisher is updated to match.
+A granular token expires, so publishing will start failing on its expiry date —
+re-run the same command with a fresh token to rotate it. The release workflow
+checks the secret is present before it builds or releases anything, so a missing
+or expired token fails the run immediately instead of halfway through.
+
+npm also supports **trusted publishing** (OIDC), which removes the token
+entirely and does not require an npm organization — the trusted publisher points
+at the GitHub owner, repo and workflow filename. Worth migrating to when
+convenient.
 
 ### Re-releasing a tag
 
