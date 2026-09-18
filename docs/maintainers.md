@@ -15,35 +15,51 @@ export const REGISTRY = {
 
 ## Releasing a new skill version
 
-The installer downloads the `guider.skill` asset **attached to the release** — so
-every release tag must carry that asset, or `install`/`update` fails with
-`Release <tag> has no asset named guider.skill`.
+Cutting a release means shipping **two** artifacts from the same commit: the
+`guider.skill` asset attached to the GitHub release (the installer downloads it
+by that exact name — a release without it fails every `install`/`update` with
+`Release <tag> has no asset named guider.skill`) and the `@adrianfsf/guider`
+package on npm.
+
+`.github/workflows/release.yml` does both. It runs on a pushed `v*` tag:
 
 ```bash
-# 1. Rebuild the .skill from skill-src/ (prints its sha256)
-npm run build
+# 1. Bump `version` in package.json — through a PR; main requires one
+git checkout -b release/v1.3.0
+npm version 1.3.0 --no-git-tag-version
+git commit -am "chore(release): v1.3.0" && git push -u origin release/v1.3.0
+gh pr create --fill && gh pr merge --squash
 
-# 2. Create the release and attach the asset
-gh release create v1.1.0 dist/guider.skill \
-  --repo AdrianSilvadoNascimento/guider --title v1.1.0
-
-# …or attach to an existing release
-gh release upload v1.1.0 dist/guider.skill \
-  --repo AdrianSilvadoNascimento/guider --clobber
+# 2. Tag the merge commit — this is what launches the pipeline
+git checkout main && git pull
+git tag v1.3.0 && git push origin v1.3.0
 ```
+
+The workflow then refuses to go on if the tag and `package.json` disagree, runs
+lint + tests, rebuilds the `.skill`, creates the release with generated notes
+(plus the artifact's sha256 as a copy-pasteable pinning command), and publishes
+to npm with provenance.
+
+It is safe to re-run: an existing release gets its asset replaced rather than
+duplicated, and a version already on npm is skipped instead of failing the job.
 
 `update` automatically serves the newest release — no code change needed.
-Consumers who want reproducible installs can pin with `--tag` and `--sha256`
-(use the digest printed by `npm run build`).
 
-## Publishing the CLI
+### One-time setup
 
-The package targets the public npm registry (`publishConfig.access` is already
-`public`).
+The npm publish step needs an **`NPM_TOKEN`** repository secret (an npmjs.com
+*automation* token, so 2FA doesn't block it):
 
 ```bash
-npm login          # once, with your npmjs.com account
-npm publish        # publishes @adrianfsf/guider publicly
+gh secret set NPM_TOKEN --repo AdrianSilvadoNascimento/guider
 ```
 
-Bump `version` in `package.json` before each publish.
+### Releasing by hand
+
+Only needed if the workflow is unavailable:
+
+```bash
+npm run build                                    # prints the sha256
+gh release create v1.3.0 dist/guider.skill --title v1.3.0
+npm publish                                      # after `npm login`
+```

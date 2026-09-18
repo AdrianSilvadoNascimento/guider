@@ -1,0 +1,97 @@
+name: Release
+
+# Pushing the tag is the trigger, not a manual bump, because `main` requires a
+# pull request — a workflow can't push a version commit to it. The flow is:
+# bump `version` in package.json via PR, merge, then tag the merge commit.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the release and upload guider.skill
+  id-token: write # npm provenance attestation
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, release and publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      # A tag that disagrees with package.json would ship a release asset under
+      # one version and an npm package under another. Fail before anything is
+      # published rather than after.
+      - name: Tag must match package.json version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(npm pkg get version | tr -d '"')"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} implies version ${tag}, but package.json says ${pkg}."
+            exit 1
+          fi
+
+      - run: npm run lint
+
+      - run: npm test
+
+      - name: Build the skill asset
+        id: build
+        run: |
+          npm run build
+          echo "sha256=$(sha256sum dist/guider.skill | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+
+      # The CLI resolves a release through the API and downloads the asset named
+      # `guider.skill`; a release without it fails every install/update, so this
+      # step is the one that must not be skipped.
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA256: ${{ steps.build.outputs.sha256 }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists — replacing its asset."
+            gh release upload "$GITHUB_REF_NAME" dist/guider.skill --clobber
+          else
+            gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+              -f tag_name="$GITHUB_REF_NAME" --jq .body > notes.md
+            {
+              echo
+              echo "## Pinning this release"
+              echo
+              echo '```bash'
+              echo "npx @adrianfsf/guider skills install guider --tag ${GITHUB_REF_NAME} --sha256 ${SHA256}"
+              echo '```'
+            } >> notes.md
+            gh release create "$GITHUB_REF_NAME" dist/guider.skill \
+              --title "$GITHUB_REF_NAME" --notes-file notes.md
+          fi
+
+      # Split from the release step so that re-running a failed npm publish
+      # doesn't depend on re-creating the release, and vice versa.
+      - name: Publish to npm
+        env:
+          # The repo's own .npmrc reads ${NPM_TOKEN} and takes precedence over
+          # the one setup-node writes, so both names are set.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          name="$(npm pkg get name | tr -d '"')"
+          version="$(npm pkg get version | tr -d '"')"
+          if npm view "${name}@${version}" version >/dev/null 2>&1; then
+            echo "${name}@${version} is already on npm — skipping publish."
+          else
+            npm publish --provenance --access public
+          fi
