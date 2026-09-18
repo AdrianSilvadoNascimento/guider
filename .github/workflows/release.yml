@@ -3,26 +3,54 @@ name: Release
 # Pushing the tag is the trigger, not a manual bump, because `main` requires a
 # pull request — a workflow can't push a version commit to it. The flow is:
 # bump `version` in package.json via PR, merge, then tag the merge commit.
+#
+# workflow_dispatch exists for recovery: it runs *this* file from the default
+# branch against an already-published tag's code, which is the only way to
+# re-release a tag that was cut before a pipeline fix landed.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re-)release, e.g. v1.3.0"
+        required: true
 
 permissions:
   contents: write # create the release and upload guider.skill
-  id-token: write # npm provenance attestation
+  id-token: write # required to attach npm provenance to the published package
 
 concurrency:
-  group: release-${{ github.ref_name }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
   release:
     name: Build, release and publish
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
 
     steps:
-      - uses: actions/checkout@v7
+      # First, before anything is built or released. An absent secret used to
+      # surface only at the very last step, as an ENEEDAUTH telling you to run
+      # `npm adduser` — after the GitHub release had already been created,
+      # leaving the version published on GitHub but not on npm.
+      - name: NPM_TOKEN must be present
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "::error::The NPM_TOKEN repository secret is missing or empty. Set it with: gh secret set NPM_TOKEN --repo ${GITHUB_REPOSITORY}"
+            exit 1
+          fi
 
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      # `registry-url` is what makes setup-node write the .npmrc that reads
+      # $NODE_AUTH_TOKEN at publish time, so it has to stay.
       - uses: actions/setup-node@v7
         with:
           node-version: 22
@@ -36,10 +64,10 @@ jobs:
       # published rather than after.
       - name: Tag must match package.json version
         run: |
-          tag="${GITHUB_REF_NAME#v}"
+          want="${TAG#v}"
           pkg="$(npm pkg get version | tr -d '"')"
-          if [ "$tag" != "$pkg" ]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} implies version ${tag}, but package.json says ${pkg}."
+          if [ "$want" != "$pkg" ]; then
+            echo "::error::Tag ${TAG} implies version ${want}, but package.json says ${pkg}."
             exit 1
           fi
 
@@ -61,31 +89,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SHA256: ${{ steps.build.outputs.sha256 }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME already exists — replacing its asset."
-            gh release upload "$GITHUB_REF_NAME" dist/guider.skill --clobber
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — replacing its asset."
+            gh release upload "$TAG" dist/guider.skill --clobber
           else
             gh api "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
-              -f tag_name="$GITHUB_REF_NAME" --jq .body > notes.md
+              -f tag_name="$TAG" --jq .body > notes.md
             {
               echo
               echo "## Pinning this release"
               echo
               echo '```bash'
-              echo "npx @adrianfsf/guider skills install guider --tag ${GITHUB_REF_NAME} --sha256 ${SHA256}"
+              echo "npx @adrianfsf/guider skills install guider --tag ${TAG} --sha256 ${SHA256}"
               echo '```'
             } >> notes.md
-            gh release create "$GITHUB_REF_NAME" dist/guider.skill \
-              --title "$GITHUB_REF_NAME" --notes-file notes.md
+            gh release create "$TAG" dist/guider.skill \
+              --title "$TAG" --notes-file notes.md
           fi
 
       # Split from the release step so that re-running a failed npm publish
       # doesn't depend on re-creating the release, and vice versa.
+      # NODE_AUTH_TOKEN is the name the .npmrc written by setup-node reads;
+      # `--provenance` is what `id-token: write` above is for.
       - name: Publish to npm
         env:
-          # The repo's own .npmrc reads ${NPM_TOKEN} and takes precedence over
-          # the one setup-node writes, so both names are set.
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           name="$(npm pkg get name | tr -d '"')"

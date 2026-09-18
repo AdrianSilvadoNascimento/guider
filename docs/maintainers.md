@@ -45,21 +45,48 @@ duplicated, and a version already on npm is skipped instead of failing the job.
 
 `update` automatically serves the newest release — no code change needed.
 
-### One-time setup
+### One-time setup: the `NPM_TOKEN` secret
 
-The npm publish step needs an **`NPM_TOKEN`** repository secret (an npmjs.com
-*automation* token, so 2FA doesn't block it):
+The publish step authenticates with an npm token held as a repository secret.
+Create the token on npmjs.com under **Access Tokens** — a *granular* token
+scoped to `@adrianfsf/guider` with **Read and write**, or a classic
+**Automation** token (that type is what bypasses 2FA on publish).
+
+Then set it without the value ever touching your shell history; the command
+prompts for it:
 
 ```bash
 gh secret set NPM_TOKEN --repo AdrianSilvadoNascimento/guider
 ```
 
+A granular token expires, so publishing will start failing on its expiry date —
+re-run the same command with a fresh token to rotate it. The release workflow
+checks the secret is present before it builds or releases anything, so a missing
+or expired token fails the run immediately instead of halfway through.
+
+npm also supports **trusted publishing** (OIDC), which removes the token
+entirely and does not require an npm organization — the trusted publisher points
+at the GitHub owner, repo and workflow filename. Worth migrating to when
+convenient.
+
+### Re-releasing a tag
+
+`workflow_dispatch` runs the workflow from the default branch against an
+existing tag's code. That is the way to re-release a tag cut *before* a
+pipeline fix landed — re-running the original failed run would just replay the
+old, broken workflow.
+
+```bash
+gh workflow run Release -f tag=v1.3.0
+```
+
 ### Releasing by hand
 
-Only needed if the workflow is unavailable:
+Only needed if the workflow is unavailable. Note that a manual publish gets no
+provenance, and needs a real npm login:
 
 ```bash
 npm run build                                    # prints the sha256
 gh release create v1.3.0 dist/guider.skill --title v1.3.0
-npm publish                                      # after `npm login`
+npm login && npm publish
 ```
