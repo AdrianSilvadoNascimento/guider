@@ -45,21 +45,45 @@ duplicated, and a version already on npm is skipped instead of failing the job.
 
 `update` automatically serves the newest release — no code change needed.
 
-### One-time setup
+### One-time setup: npm trusted publishing
 
-The npm publish step needs an **`NPM_TOKEN`** repository secret (an npmjs.com
-*automation* token, so 2FA doesn't block it):
+There is **no npm token anywhere** — not in a secret, not in the workflow. npm
+exchanges the workflow's OIDC identity for a short-lived credential instead, so
+there is no long-lived key to leak or rotate, and provenance is attached for
+free.
+
+It only works once npmjs.com has been told to trust this workflow. On
+[npmjs.com/package/@adrianfsf/guider/access](https://www.npmjs.com/package/@adrianfsf/guider/access),
+under **Trusted Publisher**, choose GitHub Actions and enter:
+
+| Field | Value |
+| --- | --- |
+| Organization or user | `AdrianSilvadoNascimento` |
+| Repository | `guider` |
+| Workflow filename | `release.yml` |
+| Environment | *(leave empty)* |
+
+The workflow filename is part of the trust relationship — renaming
+`release.yml` breaks publishing until the trusted publisher is updated to match.
+
+### Re-releasing a tag
+
+`workflow_dispatch` runs the workflow from the default branch against an
+existing tag's code. That is the way to re-release a tag cut *before* a
+pipeline fix landed — re-running the original failed run would just replay the
+old, broken workflow.
 
 ```bash
-gh secret set NPM_TOKEN --repo AdrianSilvadoNascimento/guider
+gh workflow run Release -f tag=v1.3.0
 ```
 
 ### Releasing by hand
 
-Only needed if the workflow is unavailable:
+Only needed if the workflow is unavailable. Note that a manual publish gets no
+provenance, and needs a real npm login:
 
 ```bash
 npm run build                                    # prints the sha256
 gh release create v1.3.0 dist/guider.skill --title v1.3.0
-npm publish                                      # after `npm login`
+npm login && npm publish
 ```
