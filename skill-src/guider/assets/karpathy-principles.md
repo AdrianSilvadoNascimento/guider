@@ -2,12 +2,9 @@
 
 > Use this only when `/guider init` can't reach the network. The canonical
 > source is **multica-ai/andrej-karpathy-skills** —
-> https://github.com/multica-ai/andrej-karpathy-skills — and `init` should
-> prefer fetching and merging it directly:
->
-> ```bash
-> curl -fsSL https://github.com/multica-ai/andrej-karpathy-skills/raw/refs/heads/main/CLAUDE.md >> CLAUDE.md
-> ```
+> https://github.com/multica-ai/andrej-karpathy-skills. `AGENTS.md` gets a
+> condensed form, one line per principle (`init-flow.md` Phase 5 step 4); the
+> full text, when the user wants it, goes to a companion doc.
 >
 > The text below is a paraphrased summary for offline use, not the original.
 > Attribute it to the source above and link it.

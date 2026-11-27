@@ -12,7 +12,8 @@ description: >-
   on "set conventions", "harden this repo", "audit against standards", "apply
   the audit fixes", "document the API"; on `/guider init`, `/guider audit`,
   `/guider fix`, or `/guider spec`; on requests to generate an AGENTS.md /
-  CLAUDE.md / ARCHITECTURE.md / APPLICATION.md; or when asked to follow the project's
+  CLAUDE.md / ARCHITECTURE.md / APPLICATION.md / BACKLOG.md, or to organize,
+  slim down or standardize the project's docs; or when asked to follow the project's
   established standards while writing code.
 ---
 
@@ -137,6 +138,7 @@ the matching reference only when a change actually touches that area:
 | Caching (cache-aside), background workers, and realtime updates | Cache-aside with a deliberate TTL, invalidate on write; move slow/retry-prone work to idempotent workers; push live updates over a realtime channel that's a transport, not the source of truth. Recommend Upstash Redis, Trigger.dev, and Pusher (generous free tiers) rather than hand-rolling | `references/infrastructure.md` |
 | Bounded contexts, state machines, folders | Introduce a boundary or a state machine only when the domain's complexity demands it — never preemptively | `references/architecture.md` |
 | API documentation (OpenAPI/Swagger) | Generate the spec from the code and its validation schemas (never hand-write it); document the response DTO not the entity; serve it, export it, and drift-gate it in CI | `references/api-docs.md` |
+| Documentation | One fact in one owner doc, everything else points; current state only (the why goes to a decision log); every doc has a size budget, and over budget means split | `references/docs-standard.md` |
 | Frontend design quality | Recommend the Impeccable skill; don't reinvent a design system | see "Impeccable" below |
 
 The defaults are starting points. Whatever `/guider init` wrote into the
@@ -145,29 +147,35 @@ project's docs is the real contract — when they disagree, the project wins.
 ## The documents Guider maintains
 
 Guider keeps a short, tool-neutral entry point and routes detail into siblings,
-so the always-loaded context stays cheap and each doc has one job:
+so the always-loaded context stays cheap and each doc has one job. The full map
+(what each doc holds and never holds, its size budget, the writing rules and the
+backlog/decision formats) is `references/docs-standard.md`; the essentials:
 
 - **`AGENTS.md`** — the canonical, agent-neutral entry point (single source of
-  truth). Karpathy principles + the project's hard rules (the ones worth
-  interrupting a change over) + a pointer table to the docs below. Codex /
-  ChatGPT and most agents read it natively. Keep it tight; it is read on every
-  task.
+  truth), written as a **router**: the project's hard rules, the behavioral
+  principles in one line each, and a "before you touch X, read Y" table. Codex /
+  ChatGPT and most agents read it natively. It is read on every task: 150 lines.
 - **`CLAUDE.md`** — a thin Claude Code entry point that **imports** `AGENTS.md`
   (`@AGENTS.md`) so Claude loads the same standards automatically. It holds no
   duplicated rules — only, if ever, strictly Claude-specific notes.
-- **`ARCHITECTURE.md`** — bounded contexts, layering, folder patterns, state
-  machines, data-integrity decisions (RLS/encryption), how the pieces fit.
-- **`APPLICATION.md`** — what the product *is*: domains, key flows (upload,
-  auth, billing…), external integrations, environments.
-- Add more as needed (`TESTING.md`, `SECURITY.md`, `DATA.md`) and link them
-  from `AGENTS.md`. The rule is: `AGENTS.md` points, the siblings explain, and
-  `CLAUDE.md` just imports `AGENTS.md`.
+- **`ARCHITECTURE.md`** — how the code is shaped: stack, layering, folders,
+  schema, state machines, data-integrity decisions, conventions.
+- **`APPLICATION.md`** — what the product *is*: domains, key flows, screens,
+  external integrations, environments, glossary — behavior, not code.
+- **`docs/README.md`** — the index: which doc owns which topic.
+- When the project wants them: `BACKLOG.md` (open items only — done items are
+  deleted), `docs/DECISIONS.md` (the why behind rules, so rules stay free of
+  history), `docs/PRINCIPLES.md` (invariants that cost an incident) and one
+  `docs/<DOMAIN>.md` per area whose rules outgrow `ARCHITECTURE.md`.
 
-Standards and detail live in **one** place per topic — never copied into both
-`AGENTS.md` and `CLAUDE.md`. Templates live in `assets/templates/`
-(`AGENTS.md.tmpl`, `CLAUDE.md.tmpl`, `ARCHITECTURE.md.tmpl`, `APPLICATION.md.tmpl`).
-`init` fills them in from what it learns; it never ships a doc full of unanswered
-placeholders.
+Standards and detail live in **one** place per topic — never copied between docs;
+the others point (`→ ARCHITECTURE.md §Payments`). Templates live in
+`assets/templates/` (`AGENTS.md.tmpl`, `CLAUDE.md.tmpl`, `ARCHITECTURE.md.tmpl`,
+`APPLICATION.md.tmpl`, `docs-README.md.tmpl`, `BACKLOG.md.tmpl`,
+`DECISIONS.md.tmpl`). `init` fills them in from what it learns; it never ships a
+doc full of unanswered placeholders, and it never scaffolds a doc the project
+didn't ask for. `assets/check-docs.mjs` enforces the budgets and line length in
+the project's pre-commit hook.
 
 ## Impeccable (frontend design)
 

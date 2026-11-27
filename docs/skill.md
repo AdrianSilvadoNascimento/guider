@@ -41,6 +41,17 @@ so the always-loaded context stays cheap and each doc has one job:
   data-integrity decisions (RLS/encryption).
 - **`APPLICATION.md`** — what the product *is*: domains, key flows, integrations,
   environments.
+- **`docs/README.md`** — the index: which doc owns which topic.
+- When the project wants them: **`BACKLOG.md`** (open items only),
+  **`docs/DECISIONS.md`** (the why behind rules), **`docs/PRINCIPLES.md`**
+  (invariants that cost an incident) and one **`docs/<DOMAIN>.md`** per area.
+
+Every doc has a size budget (`AGENTS.md`: 150 lines; domain docs: 40,000
+characters), holds only the current state, and states each fact once; the
+others point to it. The full standard is
+[`skill-src/guider/references/docs-standard.md`](../skill-src/guider/references/docs-standard.md),
+and `assets/check-docs.mjs` can enforce the budgets in the project's pre-commit
+hook.
 
 The rule is: **`AGENTS.md` points, the siblings explain, and `CLAUDE.md` just
 imports `AGENTS.md`.** Standards live in exactly one place per topic — never

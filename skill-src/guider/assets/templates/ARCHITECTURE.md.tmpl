@@ -1,7 +1,9 @@
 <!--
   ARCHITECTURE.md template (filled by `/guider init`).
   This is the "why the code is shaped this way" map. Fill from the codebase
-  inventory and the interview; delete sections that don't apply.
+  inventory and the interview; delete sections that don't apply. Domain
+  business rules live in docs/<DOMAIN>.md and are pointed to from here.
+  Budget: 40,000 chars (references/docs-standard.md).
 -->
 
 # Architecture — {{PROJECT_NAME}}
@@ -20,12 +22,19 @@
 
 ## Layering
 
-Transport → service/use-case → repository (abstract + implementation) → DB.
-Dependencies point inward on abstractions. {{LAYERING_NOTES}}
+{{LAYERING}}  <!-- default: transport → service/use-case → repository (abstract +
+     implementation) → DB, dependencies pointing inward on abstractions. Write
+     the project's REAL layering if it deliberately differs, and why. -->
 
 ## Bounded contexts
 
 {{BOUNDED_CONTEXTS}}  <!-- list each context, its responsibility, and how they relate. Omit if the app is a single context. -->
+
+## Schema
+
+| Table | Purpose (one sentence) | Owner doc |
+|---|---|---|
+{{SCHEMA_TABLES}}  <!-- one line per table; column-level rules live in the owner doc -->
 
 ## State machines
 
@@ -56,3 +65,7 @@ Dependencies point inward on abstractions. {{LAYERING_NOTES}}
 ## Conventions (detail)
 
 {{CONVENTIONS_DETAIL}}  <!-- naming, enums-over-literals, DTO boundaries, error handling, logging, DRY limits, line length -->
+
+## Structural decisions
+
+{{STRUCTURAL_DECISIONS}}  <!-- one line each: the choice + a pointer to its docs/DECISIONS.md entry (D-NNN). The why lives there. Omit if no decision log. -->

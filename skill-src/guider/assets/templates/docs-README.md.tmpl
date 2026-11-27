@@ -1,0 +1,37 @@
+<!--
+  docs/README.md template (filled by `/guider init`). The index of the project's
+  docs and the contract for writing them. Content never lives here — only where
+  it lives. Budget: 150 lines (references/docs-standard.md). Remove the rows of
+  docs the project doesn't have. Delete this comment once filled.
+-->
+
+# Docs — {{PROJECT_NAME}}
+
+## Owner of each topic
+
+A rule lives in ONE doc: its owner. Everywhere else gets a pointer, never a copy.
+
+| Topic | Owner doc |
+|---|---|
+| How agents work here | `AGENTS.md` |
+| Why the product exists, for whom | `PRODUCT.md` |
+| What the product does | `APPLICATION.md` |
+| How the code is shaped | `ARCHITECTURE.md` |
+| How the UI is built | `DESIGN.md` |
+| What is left to do | `BACKLOG.md` |
+| Why things are the way they are | `docs/DECISIONS.md` |
+| Invariants that cost an incident | `docs/PRINCIPLES.md` |
+{{DOMAIN_OWNERS}}  <!-- one row per domain doc, e.g. "| Payments | `docs/PAYMENTS.md` |" -->
+
+## Writing rules
+
+- Current state, present tense; the past lives in git and `docs/DECISIONS.md`.
+- Code pointers are file + symbol, never a line number.
+- Paragraph ≤ 5 lines; line ≤ {{MAX_LINE}} characters (table rows exempt; keep cells short).
+- Docs in {{DOCS_LANGUAGE}}.
+- Budgets: {{BUDGETS_SUMMARY}}. Over budget = split, never squeeze.
+  {{CHECK_DOCS_NOTE}}  <!-- e.g. "Checked by `scripts/check-docs.mjs` in the pre-commit hook." -->
+
+## Specs and plans
+
+{{SPECS_INDEX}}  <!-- one line each: file · status (in progress / done — rules in <doc>) -->

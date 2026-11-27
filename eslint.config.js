@@ -3,7 +3,13 @@ import js from "@eslint/js";
 export default [
   js.configs.recommended,
   {
-    files: ["bin/**/*.js", "lib/**/*.js", "test/**/*.js", "scripts/**/*.js"],
+    files: [
+      "bin/**/*.js",
+      "lib/**/*.js",
+      "test/**/*.js",
+      "scripts/**/*.js",
+      "skill-src/**/*.mjs",
+    ],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: "module",
