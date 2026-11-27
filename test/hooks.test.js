@@ -141,3 +141,41 @@ test("post-edit refreshes the code graph for edited source files", () => {
   assert.deepEqual(JSON.parse(impact.stdout).direct, ["src/b.js"]);
   assert.ok(existsSync(join(root, ".guider/graph.json")));
 });
+
+test("pre-tool-guard ignores lockfile installs, redirections, flag values and local paths", () => {
+  const root = project();
+  const allowed = [
+    "npm install > /dev/null",
+    "npm i 2>&1 | tail",
+    "pnpm install --filter web",
+    "pip install -e .",
+    "pip install -r requirements.txt",
+    "npm install\nnpm test",
+    "npm install ./packages/local",
+  ];
+  for (const command of allowed) {
+    assert.equal(hook(root, "pre-tool-guard.mjs", { tool_name: "Bash", tool_input: { command } }).status, 0, command);
+  }
+  const blocked = ["pnpm --filter web add zod", "cd x && yarn add react", "python -m pip install requests", "npm i -D --save-exact eslint"];
+  for (const command of blocked) {
+    assert.equal(hook(root, "pre-tool-guard.mjs", { tool_name: "Bash", tool_input: { command } }).status, 2, command);
+  }
+});
+
+test("post-edit treats a lint timeout as skipped, not failed", () => {
+  const root = project({
+    "src/a.js": "x\n",
+    ".guider-hooks.json": JSON.stringify({
+      lint: `"${process.execPath}" -e "setTimeout(() => process.exit(1), 60000)"`,
+      lintTimeoutSeconds: 1,
+    }),
+  });
+  const result = spawnSync(process.execPath, [join(root, "scripts/guider-hooks/post-edit.mjs")], {
+    cwd: root,
+    input: JSON.stringify({ cwd: root, tool_name: "Edit", tool_input: { file_path: "src/a.js", new_string: "x" } }),
+    encoding: "utf8",
+    env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    timeout: 40000,
+  });
+  assert.equal(result.status, 0, result.stderr);
+});

@@ -115,3 +115,24 @@ test("latestAged skips versions still inside the quarantine window", () => {
   assert.equal(latestAged(doc, 0, now), "1.5.0");
   assert.equal(latestAged({ "dist-tags": { latest: "2.0.0" } }, 7, now), "2.0.0");
 });
+
+test("latestAged never suggests an unpublished or deprecated version", () => {
+  const now = Date.parse("2026-11-27T00:00:00Z");
+  const doc = {
+    "dist-tags": { latest: "2.0.2" },
+    versions: { "2.0.0": {}, "2.0.1-gone": {}, "2.0.2": {}, "1.9.0": { deprecated: "bad build" } },
+    time: { "1.9.0": "2026-09-01T00:00:00Z", "2.0.0": "2026-10-01T00:00:00Z", "2.0.1": "2026-11-01T00:00:00Z", "2.0.2": "2026-11-26T00:00:00Z" },
+  };
+  assert.equal(latestAged(doc, 7, now), "2.0.0");
+});
+
+test("refreshCache records the check even when nothing cleared the quarantine", async () => {
+  const cacheFile = tmpCache();
+  const fresh = new Date().toISOString();
+  const fetchImpl = async () =>
+    new Response(JSON.stringify({ "dist-tags": { latest: "9.0.0" }, versions: { "9.0.0": {} }, time: { "9.0.0": fresh } }), { status: 200 });
+  await refreshCache(pkg, { cacheFile, fetchImpl });
+  const cache = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
+  assert.equal(cache.latest, null);
+  assert.ok(cache.lastCheck > 0);
+});

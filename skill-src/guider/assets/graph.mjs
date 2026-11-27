@@ -17,7 +17,7 @@
 //     "contexts": ["src/billing/", "src/deals/"] }   // cross-context imports must hit <ctx>/index.*
 
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, posix, relative, sep } from "node:path";
 
 const root = process.cwd();
@@ -45,7 +45,13 @@ function walk(dir = root, files = []) {
     const full = join(dir, name);
     const rel = toPosix(relative(root, full));
     if (isIgnored(rel)) continue;
-    const stat = statSync(full);
+    let stat;
+    try {
+      stat = lstatSync(full); // never follow links: a dangling one throws, a looping one never ends
+    } catch {
+      continue;
+    }
+    if (stat.isSymbolicLink()) continue;
     if (stat.isDirectory()) walk(full, files);
     else if (SOURCE_EXT.some((ext) => name.endsWith(ext))) files.push(rel);
   }
@@ -220,36 +226,52 @@ function impact(files, targets) {
   return { targets, direct: [...direct].sort(), transitive: sorted, tests: sorted.filter((path) => TEST_RE.test(path)) };
 }
 
-// Tarjan's strongly connected components; any component with more than one file is a cycle.
+// Tarjan's strongly connected components, iterative so a deep import chain
+// can't overflow the call stack. Any component with more than one file is a cycle.
 function cycles(files) {
   let index = 0;
   const stack = [];
   const meta = new Map();
   const result = [];
-  const visit = (node) => {
-    meta.set(node, { index, low: index, onStack: true });
+  for (const start of Object.keys(files)) {
+    if (meta.has(start)) continue;
+    const work = [{ node: start, edge: 0 }];
+    meta.set(start, { index, low: index, onStack: true });
     index++;
-    stack.push(node);
-    for (const next of files[node]?.imports ?? []) {
-      if (!meta.has(next)) {
-        visit(next);
-        meta.get(node).low = Math.min(meta.get(node).low, meta.get(next).low);
-      } else if (meta.get(next).onStack) {
-        meta.get(node).low = Math.min(meta.get(node).low, meta.get(next).index);
+    stack.push(start);
+    while (work.length) {
+      const frame = work[work.length - 1];
+      const info = meta.get(frame.node);
+      const edges = files[frame.node]?.imports ?? [];
+      if (frame.edge < edges.length) {
+        const next = edges[frame.edge++];
+        if (!meta.has(next)) {
+          meta.set(next, { index, low: index, onStack: true });
+          index++;
+          stack.push(next);
+          work.push({ node: next, edge: 0 });
+        } else if (meta.get(next).onStack) {
+          info.low = Math.min(info.low, meta.get(next).index);
+        }
+        continue;
+      }
+      work.pop();
+      if (work.length) {
+        const parent = meta.get(work[work.length - 1].node);
+        parent.low = Math.min(parent.low, info.low);
+      }
+      if (info.low === info.index) {
+        const component = [];
+        let member;
+        do {
+          member = stack.pop();
+          meta.get(member).onStack = false;
+          component.push(member);
+        } while (member !== frame.node);
+        if (component.length > 1) result.push(component.sort());
       }
     }
-    if (meta.get(node).low === meta.get(node).index) {
-      const component = [];
-      let member;
-      do {
-        member = stack.pop();
-        meta.get(member).onStack = false;
-        component.push(member);
-      } while (member !== node);
-      if (component.length > 1) result.push(component.sort());
-    }
-  };
-  for (const node of Object.keys(files)) if (!meta.has(node)) visit(node);
+  }
   return result;
 }
 

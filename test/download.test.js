@@ -155,3 +155,22 @@ test("download refuses a pinned tag inside the window, accepts it with the windo
     gh.restore();
   }
 });
+
+test("pickQuarantinedRelease skips releases without the asset", () => {
+  const releases = [
+    { tag_name: "v1.4.0-cli", published_at: ago(10), assets: [] },
+    { tag_name: "v1.3.0", published_at: ago(40), assets: asset(3) },
+  ];
+  assert.equal(pickQuarantinedRelease(releases, 7, NOW, "guider.skill").tag_name, "v1.3.0");
+});
+
+test("download refuses a pinned tag with no publish date unless the window is off", async () => {
+  const gh = mockGitHub([{ tag_name: "v9.0.0", published_at: null, assets: asset(9) }]);
+  try {
+    await assert.rejects(() => download({ ...SRC, tag: "v9.0.0" }, null, { quarantineDays: 7, now: NOW }), /no publish date/);
+    const buf = await download({ ...SRC, tag: "v9.0.0" }, null, { quarantineDays: 0, now: NOW });
+    assert.equal(buf.toString(), "ASSET9");
+  } finally {
+    gh.restore();
+  }
+});

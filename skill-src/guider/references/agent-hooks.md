@@ -38,6 +38,7 @@ from a raw one; the audit and review decide.
 ```json
 {
   "lint": "npx eslint --no-warn-ignored {file}",
+  "lintTimeoutSeconds": 20,
   "scriptsDir": "scripts",
   "secretFiles": true,
   "quarantine": true,
@@ -47,7 +48,9 @@ from a raw one; the audit and review decide.
 
 `lint` is the project's fastest per-file check (`{file}` is replaced, quoted):
 `npx eslint {file}`, `npx biome check {file}`, `ruff check {file}`. Keep it
-under a few seconds — it runs after every edit. Leave type-checking and tests to
+under a few seconds — it runs after every edit. A lint that times out is
+skipped, not reported as a failure, and the whole hook stays inside a 25-second
+budget. Leave type-checking and tests to
 the git hooks and CI. Each guard can be switched off with `false`.
 
 ## Cost

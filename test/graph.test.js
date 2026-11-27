@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -109,4 +109,24 @@ test("summary reports hubs and a graphify-out graph when present", () => {
   assert.equal(value.files, 5);
   assert.equal(value.graphify.nodes, 3);
   assert.match(run(root, "summary", "--brief").stdout, /Semantic graph: graphify-out\/GRAPH_REPORT\.md/);
+});
+
+test("build skips dangling and looping symlinks", () => {
+  const root = project({ "src/a.js": "" });
+  symlinkSync(join(root, "missing"), join(root, "src/dangling"));
+  symlinkSync(root, join(root, "src/loop"));
+  const result = run(root, "build");
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /1 file\(s\)/);
+});
+
+test("cycles handles an import chain deeper than the call stack", () => {
+  const files = {};
+  const depth = 12000;
+  for (let i = 0; i < depth; i++) files[`m/f${i}.js`] = i + 1 < depth ? `import "./f${i + 1}.js";\n` : 'import "./f0.js";\n';
+  const root = project(files);
+  run(root, "build");
+  const { status, value } = json(root, "cycles");
+  assert.equal(status, 1);
+  assert.equal(value[0].length, depth);
 });

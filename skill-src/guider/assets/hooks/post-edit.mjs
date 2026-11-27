@@ -22,8 +22,19 @@ const SINKS = [
   { re: /\b(pickle\.loads?|yaml\.load)\(/, why: "unsafe deserialization — use a safe loader" },
 ];
 
-function run(root, command, timeout = 20000) {
-  const result = spawnSync(command, { cwd: root, shell: true, encoding: "utf8", timeout });
+// The hook is registered with a 30s timeout; stay well inside it across all files.
+const BUDGET_MS = 25000;
+const deadline = Date.now() + BUDGET_MS;
+
+// Run a command within the remaining budget. A timeout is "skipped", never a
+// failure: a slow linter must not send the agent chasing an error that isn't there.
+function run(root, command, { shell = true, args = [], limitMs = 20000 } = {}) {
+  const timeout = Math.min(limitMs, deadline - Date.now());
+  if (timeout < 500) return { ok: true, skipped: true, output: "" };
+  const result = shell
+    ? spawnSync(command, { cwd: root, shell: true, encoding: "utf8", timeout })
+    : spawnSync(command, args, { cwd: root, encoding: "utf8", timeout });
+  if (result.error || result.signal) return { ok: true, skipped: true, output: "" };
   return { ok: result.status === 0, output: `${result.stdout ?? ""}${result.stderr ?? ""}`.trim().slice(-2000) };
 }
 
@@ -37,7 +48,9 @@ function writtenText(input) {
   return text || null;
 }
 
-const quote = (path) => `'${path.replace(/'/g, "'\\''")}'`;
+// Quote a path for the platform shell (cmd.exe doesn't understand single quotes).
+const quote = (path) =>
+  process.platform === "win32" ? `"${path.replace(/"/g, '""')}"` : `'${path.replace(/'/g, "'\\''")}'`;
 
 failOpen(async () => {
   const input = await readInput();
@@ -53,11 +66,12 @@ failOpen(async () => {
 
   for (const file of files) {
     if (config.lint && SOURCE.test(file)) {
-      const result = run(root, config.lint.replaceAll("{file}", quote(file)));
+      const limitMs = (config.lintTimeoutSeconds ?? 20) * 1000;
+      const result = run(root, config.lint.replaceAll("{file}", quote(file)), { limitMs });
       if (!result.ok) failures.push(`lint failed on ${file}:\n${result.output}`);
     }
     if (file.endsWith(".md") && existsSync(join(root, scriptsDir, "check-docs.mjs"))) {
-      const result = run(root, `${quote(process.execPath)} ${quote(join(scriptsDir, "check-docs.mjs"))} ${quote(file)}`);
+      const result = run(root, process.execPath, { shell: false, args: [join(scriptsDir, "check-docs.mjs"), file] });
       if (!result.ok) failures.push(`docs gate failed on ${file}:\n${result.output}`);
     }
     if (config.securityWarnings !== false && SOURCE.test(file)) {
@@ -68,7 +82,7 @@ failOpen(async () => {
 
   const sourceFiles = files.filter((file) => SOURCE.test(file));
   if (sourceFiles.length && existsSync(join(root, scriptsDir, "graph.mjs")) && existsSync(join(root, ".guider", "graph.json"))) {
-    run(root, [process.execPath, join(scriptsDir, "graph.mjs"), "refresh", ...sourceFiles].map(quote).join(" "), 10000);
+    run(root, process.execPath, { shell: false, args: [join(scriptsDir, "graph.mjs"), "refresh", ...sourceFiles] });
   }
 
   const notes = [];
