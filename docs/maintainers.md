@@ -45,29 +45,27 @@ duplicated, and a version already on npm is skipped instead of failing the job.
 
 `update` automatically serves the newest release — no code change needed.
 
-### One-time setup: the `NPM_TOKEN` secret
+Do not create the release from the GitHub web UI. That creates the tag on
+whatever commit `main` is at, usually before the version bump, so the workflow
+stops at the version check and leaves behind a release with no `guider.skill`
+asset — which `update` then serves as the latest release, breaking installs.
 
-The publish step authenticates with an npm token held as a repository secret.
-Create the token on npmjs.com under **Access Tokens** — a *granular* token
-scoped to `@adrianfsf/guider` with **Read and write**, or a classic
-**Automation** token (that type is what bypasses 2FA on publish).
+### One-time setup: npm trusted publishing
 
-Then set it without the value ever touching your shell history; the command
-prompts for it:
+The publish step uses npm **trusted publishing** (OIDC), not a token. There is
+no `NPM_TOKEN` secret to create or rotate. npm stopped accepting tokens that
+publish directly without 2FA, so a token-based setup is no longer an option.
 
-```bash
-gh secret set NPM_TOKEN --repo AdrianSilvadoNascimento/guider
-```
+On npmjs.com, open `@adrianfsf/guider` → **Settings** → **Trusted Publisher** →
+**GitHub Actions** and enter:
 
-A granular token expires, so publishing will start failing on its expiry date —
-re-run the same command with a fresh token to rotate it. The release workflow
-checks the secret is present before it builds or releases anything, so a missing
-or expired token fails the run immediately instead of halfway through.
+- Organization or user: `AdrianSilvadoNascimento`
+- Repository: `guider`
+- Workflow filename: `release.yml`
+- Environment: leave empty
 
-npm also supports **trusted publishing** (OIDC), which removes the token
-entirely and does not require an npm organization — the trusted publisher points
-at the GitHub owner, repo and workflow filename. Worth migrating to when
-convenient.
+The trusted publisher is tied to the workflow filename: renaming
+`release.yml` breaks publishing until the setting is updated to match.
 
 ### Re-releasing a tag
 
