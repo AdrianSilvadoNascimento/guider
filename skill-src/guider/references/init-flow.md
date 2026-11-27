@@ -177,6 +177,13 @@ Cover these, skipping any the scan already answered:
   configure.) If no, skip the rest of this round entirely — it's opt-in, not
   a default.
 
+**Code graph** (`code-graph.md`)
+- Copy `graph.mjs` and build the structural graph (default yes — it is free and
+  derived). Which layering rules and bounded contexts, already confirmed above,
+  should become machine-checked boundaries in `.guider-graph.json`?
+- Large repo, or lots of docs/specs beside the code? Offer graphify for a
+  semantic graph (optional; its install follows the release quarantine).
+
 **API documentation**
 - If there's an HTTP API and no generated OpenAPI spec (or a hand-written one
   that can drift), propose setting it up the Guider way: generated from the code
@@ -288,22 +295,26 @@ Now write, using the templates in `assets/templates/`. Rules:
    `init` — propose the install commands and let the user run them.
 7. **Recommend Impeccable** if there's a frontend, and offer to run its
    installer.
-8. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
+8. **Install the code graph** if accepted (`code-graph.md`): copy
+   `assets/graph.mjs` next to `check-docs.mjs`, write `.guider-graph.json` with
+   only the boundaries the user confirmed, add `.guider/` to `.gitignore`. The
+   first `build` is read-only on source files — run it and show the summary.
+9. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
    "What `/guider init` records") and add its two hard rules to `AGENTS.md`.
    Point at `/security-review` per change and a periodic whole-repo security
    audit; Guider's own audit covers the rules, not a penetration test.
-9. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+10. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
    tool generating the spec, where the spec file lives, the served docs route and
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-10. **Recommend the runtime infrastructure** where the interview surfaced a need
+11. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-11. **Scaffold the CI-automated audit workflow** only if the user opted in
+12. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
@@ -315,5 +326,5 @@ Now write, using the templates in `assets/templates/`. Rules:
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 11 applied), and the one or two follow-ups worth doing next. Then stop —
+step 12 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.

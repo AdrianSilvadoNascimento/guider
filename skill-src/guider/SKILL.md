@@ -140,6 +140,7 @@ the matching reference only when a change actually touches that area:
 | Caching (cache-aside), background workers, and realtime updates | Cache-aside with a deliberate TTL, invalidate on write; move slow/retry-prone work to idempotent workers; push live updates over a realtime channel that's a transport, not the source of truth. Recommend Upstash Redis, Trigger.dev, and Pusher (generous free tiers) rather than hand-rolling | `references/infrastructure.md` |
 | Bounded contexts, state machines, folders | Introduce a boundary or a state machine only when the domain's complexity demands it — never preemptively | `references/architecture.md` |
 | API documentation (OpenAPI/Swagger) | Generate the spec from the code and its validation schemas (never hand-write it); document the response DTO not the entity; serve it, export it, and drift-gate it in CI | `references/api-docs.md` |
+| Code graph (imports, hubs, cycles, boundaries) | Ask the graph before re-reading the repo: `impact` before editing a hub, `cycles`/`layers` as findings; graphify adds a semantic layer when present | `references/code-graph.md` |
 | Documentation | One fact in one owner doc, everything else points; current state only (the why goes to a decision log); every doc has a size budget, and over budget means split | `references/docs-standard.md` |
 | Frontend design quality | Recommend the Impeccable skill; don't reinvent a design system | see "Impeccable" below |
 

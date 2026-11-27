@@ -67,6 +67,13 @@ explicitly scoped away, also read:
 Don't let "audit the whole repository" quietly narrow to "audit the files that
 look auditable."
 
+**Use the code graph to order the work, not to shrink it** (`code-graph.md`). If
+the project has `scripts/graph.mjs`, refresh it first and read `summary`: scan
+hubs first, report every `cycles` / `layers` hit, and read
+`graphify-out/GRAPH_REPORT.md` when present. When the audit is scoped to a diff
+or a file list, run `impact` on those files and include their direct dependents
+in scope — that is where a changed contract breaks callers.
+
 ## Census, not incident
 
 Bound this before applying it: it's for **medium/high severity** findings — a
