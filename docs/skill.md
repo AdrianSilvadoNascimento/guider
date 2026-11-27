@@ -27,6 +27,20 @@ to remember to run it by hand. It's entirely opt-in and needs exactly one
 repo secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`) — standalone use
 of the subcommands needs none of it. See `references/ci-automation.md`.
 
+## What it enforces, and how
+
+| Area | In short | Reference |
+|---|---|---|
+| Application security | IDOR/authorization, injection, sessions, exploitable races; always high severity, confirmed before fixing, shipped with a negative test | `references/security.md` |
+| Release quarantine | Dependencies, skills and plugins are adopted only after 7 days public (negotiable, minimum 1); configured per package manager and update bot | `references/supply-chain.md` |
+| Agent hooks | Claude Code and Codex hooks: hard rules at session start, secret-file and unquarantined-install guard, per-edit lint/docs gate and security-sink warnings | `references/agent-hooks.md` |
+| Code graph | Zero-dependency import graph (`impact`, `cycles`, `layers`) so audits and fixes scope by blast radius; reads graphify output when present | `references/code-graph.md` |
+| Observability & SEO | Errors, analytics, traces and logs (Sentry, PostHog, OpenTelemetry); server-rendered metadata, sitemap and a Lighthouse budget for public sites | `references/observability.md`, `references/seo.md` |
+| Frontend tooling | A menu, not a lock-in: Modern Web Guidance, Impeccable, frontend-design, Vercel agent-skills, shadcn MCP, Chrome DevTools MCP | `references/frontend-tooling.md` |
+| Token economy | Lean always-loaded docs, the code graph, and the caveman plugin for terse agent replies | `SKILL.md` §Token economy |
+
+All references live under [`skill-src/guider/references/`](../skill-src/guider/references/).
+
 ## The documents Guider maintains
 
 Guider keeps a short, tool-neutral entry point and routes detail into siblings,
@@ -64,5 +78,7 @@ copied into both entry points.
 ## Source & authoring
 
 The skill's source lives in [`skill-src/guider/`](../skill-src/guider/):
-`SKILL.md`, `references/` (loaded on demand), and `assets/templates/`. See
+`SKILL.md`, `references/` (loaded on demand), `assets/templates/`, and the
+scripts `init` copies into projects (`assets/check-docs.mjs`, `assets/graph.mjs`,
+`assets/hooks/`). See
 [maintainers.md](maintainers.md) for building and releasing new versions.

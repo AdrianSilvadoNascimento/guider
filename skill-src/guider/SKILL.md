@@ -1,23 +1,20 @@
 ---
 name: guider
 description: >-
-  Establishes and enforces engineering conventions, quality gates, and
-  architectural guardrails for a codebase, and onboards itself via `/guider
-  init`. Use whenever the user wants to set up or apply project standards:
-  conventions, naming, linters, formatters, pre-commit hooks, secret scanning,
-  CI gates, supply-chain release quarantine (minimum release age / cooldown for
-  dependencies, skills and plugins), application security (IDOR/broken authorization, SQL/command/XSS/SSRF
-  injection, sessions, race conditions and locks), data integrity (RLS, encryption, transactions, idempotency, race
-  conditions), observability (error tracking, analytics, tracing, logging), SEO
-  for public frontends, enums over string literals, bounded contexts and state machines,
-  folder structure, fast/full test split, responsibility separation, DRY, and
-  API docs (OpenAPI/Swagger generated from code and drift-gated). Also trigger
-  on "set conventions", "harden this repo", "audit against standards", "apply
-  the audit fixes", "document the API"; on `/guider init`, `/guider audit`,
-  `/guider fix`, or `/guider spec`; on requests to generate an AGENTS.md /
-  CLAUDE.md / ARCHITECTURE.md / APPLICATION.md / BACKLOG.md, or to organize,
-  slim down or standardize the project's docs; or when asked to follow the project's
-  established standards while writing code.
+  Establishes and enforces engineering conventions, quality gates and
+  architectural guardrails, onboarding via `/guider init`. Use whenever the
+  user wants to set up or apply project standards: naming, linters/formatters,
+  pre-commit and agent hooks,
+  secret scanning, CI gates, application security (IDOR, injection, sessions,
+  races and locks), data integrity (RLS, transactions, idempotency), dependency
+  release quarantine, observability, SEO, frontend tooling, a code graph for
+  impact analysis, enums over string literals, bounded contexts, state machines,
+  fast/full tests, DRY, and OpenAPI docs generated from code. Also trigger
+  on "set conventions", "harden this repo", "audit against standards", "security
+  audit", "apply the audit fixes", "document the API"; on `/guider init`,
+  `/guider audit`, `/guider fix`, or `/guider spec`; on requests to generate or
+  slim down AGENTS.md / CLAUDE.md / ARCHITECTURE.md / APPLICATION.md /
+  BACKLOG.md; or when asked to follow the project's standards while coding.
 ---
 
 # Guider
