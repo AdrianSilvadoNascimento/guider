@@ -62,6 +62,12 @@ Things to determine, with where to look:
   `zod-to-openapi`), served at a route, exported as a file, and drift-gated in
   CI? Note whether it's generated-from-code or a hand-written spec that can drift
   (see `api-docs.md`).
+- **Observability** (`observability.md`) — error reporting, analytics, tracing
+  and logging SDKs already present (`@sentry/*`, `posthog-*`,
+  `@opentelemetry/*`, pino/winston/structlog), where they're initialized, and
+  any health endpoints.
+- **SEO** (`seo.md`, public frontends only) — rendering mode per public route,
+  metadata API usage, `robots.txt`/sitemap, JSON-LD.
 - **Supply chain** (`supply-chain.md`) — package managers and their versions,
   lockfiles, Renovate/Dependabot config, and any release-age/cooldown setting
   already present.
@@ -131,6 +137,17 @@ Cover these, skipping any the scan already answered:
 - Is there sensitive data needing **encryption** or **RLS**, and is multi-tenant
   isolation a requirement?
 - External APIs that need **retry-with-backoff** and **TTL caching**.
+
+**Observability** (`observability.md`)
+- Which signals are wanted now: errors (Sentry by default), product analytics
+  (PostHog), traces (OpenTelemetry), structured logs? Recommend errors + logs at
+  minimum for anything deployed.
+- Where do alerts go, and who watches them? Any consent requirement for
+  analytics or session replay?
+
+**SEO** (`seo.md`) — only if there's a public, indexable frontend
+- Which routes should be indexed, and which must never be?
+- Canonical host; add a Lighthouse CI gate with budgets?
 
 **Supply chain** (`supply-chain.md`)
 - Release quarantine: keep the 7-day default, or lower it (minimum 1 day)?
@@ -224,6 +241,8 @@ Before writing anything, lay out exactly what you'll create or change:
 - whether you're adding the optional CI-automated `/guider audit` workflow
   (`ci-automation.md`), if the user opted in;
 - the Karpathy merge into `AGENTS.md`;
+- the observability signals and SEO setup agreed (`observability.md`, `seo.md`),
+  as proposed install commands, not installs;
 - the recommended managed services (Upstash for cache, Trigger.dev for workers,
   Pusher for realtime) where they fit, and the chosen frontend tooling.
 
@@ -323,13 +342,18 @@ Now write, using the templates in `assets/templates/`. Rules:
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-12. **Recommend the runtime infrastructure** where the interview surfaced a need
+12. **Record observability and SEO** (`observability.md`, `seo.md`): the chosen
+   tools, init location, scrubbing config, sample rates, health endpoints and
+   alert routing in `ARCHITECTURE.md`; for public frontends, the metadata helper,
+   sitemap/robots source and the Lighthouse budget. Scaffold the Lighthouse CI
+   gate if agreed; propose SDK install commands, don't run them.
+13. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-13. **Scaffold the CI-automated audit workflow** only if the user opted in
+14. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
@@ -341,5 +365,5 @@ Now write, using the templates in `assets/templates/`. Rules:
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 13 applied), and the one or two follow-ups worth doing next. Then stop —
+step 14 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.

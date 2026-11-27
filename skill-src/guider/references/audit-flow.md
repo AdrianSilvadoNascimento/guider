@@ -156,8 +156,8 @@ You can't audit against standards you haven't read. Before scanning:
    enum/label-map location, its fast/full test commands.
 2. **Fall back to defaults for the gaps.** Where the docs are silent, audit
    against the Guider defaults in `conventions.md`, `security.md`,
-   `data-integrity.md`, `infrastructure.md`, `architecture.md`, and
-   `quality-gates.md`.
+   `data-integrity.md`, `supply-chain.md`, `infrastructure.md`,
+   `observability.md`, `seo.md`, `architecture.md`, and `quality-gates.md`.
 3. **If there are no Guider standards at all** (no `AGENTS.md` / `CLAUDE.md`),
    say so plainly: you're auditing
    against generic defaults, the results will be noisier, and `/guider init`
@@ -235,6 +235,19 @@ grep and its count:
   `HttpOnly`/`Secure`/`SameSite`, no rate limit on login/reset, CORS `*` with
   credentials, webhooks without signature verification.
 - Secrets, tokens or PII written to logs or error reports.
+
+**Observability** (`observability.md`)
+- A deployed service with no error reporting, or SDKs initialized in more than
+  one place; no global handler for unhandled errors/rejections.
+- Events, traces or logs carrying user data with no scrubbing/redaction config
+  (`high` — a privacy leak).
+- Analytics event names as scattered string literals; background-job failures
+  that alert no one.
+
+**SEO** (`seo.md`) — public frontends only
+- Public routes rendered client-only, or missing title/description/canonical.
+- No generated sitemap or `robots.txt`; staging/preview deployments indexable.
+- Hand-written JSON-LD beside the data it describes; no Lighthouse/CWV gate.
 
 **Supply chain** (`supply-chain.md`)
 - A package manager or update bot in use with no release-age/cooldown setting,
