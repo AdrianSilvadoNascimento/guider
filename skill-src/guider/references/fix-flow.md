@@ -49,6 +49,15 @@ these one finding at a time:
 - For a pattern that repeats (a cryptic name used across a file), fix all
   occurrences **within the flagged scope**, and no further.
 
+**Documentation findings** follow the same split. Relocating a section to its
+owner doc, verbatim, with a pointer left behind, is `safe` — check a
+before/after character count of the moved text so nothing is lost in the move.
+Anything that deletes or rewords content (dropping done backlog items, cutting
+history out of a rule, choosing which of two diverging statements is right) is
+`risky`: show the exact text that goes and get a yes. A locked entry file
+(`AGENTS.md`) is never edited without the owner's approval, whatever the risk
+class.
+
 **`risky` — confirm before applying.**
 DB migrations, RLS policies, behavior-changing transaction wrapping, schema
 changes, encryption. For each, show the user the exact change you intend (the
@@ -91,15 +100,20 @@ resolutions are applied (including any `risky` ones the user approved),
 record the generalization as its own `safe` action (per `audit-flow.md`'s
 Phase 3 risk taxonomy) in the project's own contract docs:
 
-- If the project's `AGENTS.md` (or a `CLAUDE.md` that imports it, or a
-  sibling like `ARCHITECTURE.md`) already keeps a running list of hard-won
-  rules/invariants, add one entry there in the same voice and format the
-  existing entries use — cite the concrete incident that surfaced it and
-  state the general rule, the same way the existing entries do.
-- If no such section exists yet, don't invent a new doc format for one
+- Record it in its **owner doc** (`docs-standard.md` §1), never in the entry
+  file by default: the rule goes where its topic lives, and an
+  incident-earned invariant also gets a `docs/PRINCIPLES.md` entry (the rule +
+  the incident that surfaced it), in the same voice and format the existing
+  entries use.
+- `AGENTS.md` gets at most a one-line pointer (a descriptive slug in its
+  principles index), and only when the rule is worth interrupting any change
+  over. If the entry file is locked, propose that line instead of writing it.
+- If no principles doc exists yet, don't invent a new doc format for one
   finding; add a short "Lessons" section to `ARCHITECTURE.md` (or wherever
   `/guider init` would have put it) and note that future entries should
   accumulate there.
+- Check the owner doc's budget after the write; if it's now over, say so in the
+  summary instead of squeezing the entry in.
 - Low-severity findings that only got a lightweight sweep note (not a full
   census) don't get a durable entry — this is for the real, medium/high
   rules, not every observation.

@@ -1,7 +1,10 @@
 <!--
   APPLICATION.md template (filled by `/guider init`).
   This is "what the product IS" — domain and flows, not code shape. Pair it
-  with ARCHITECTURE.md (the how). Delete sections that don't apply.
+  with ARCHITECTURE.md (the how). Describe behavior a user or operator can see;
+  integrity guarantees, schema and calculation rules live in their owner doc and
+  are only pointed to from here. Budget: 25,000 chars
+  (references/docs-standard.md). Delete sections that don't apply.
 -->
 
 # Application — {{PROJECT_NAME}}
@@ -12,20 +15,25 @@
 
 ## Domains
 
-{{DOMAINS}}  <!-- the core domains/areas in the user's own words -->
+| Domain | What it does (one sentence) | Owner doc |
+|---|---|---|
+{{DOMAINS}}  <!-- the core domains/areas in the user's own words; owner doc = where its rules live -->
 
 ## Key flows
 
 <!-- The handful of flows worth writing down (upload, auth, billing, OCR…).
-     For each: trigger, steps, and which integrity guarantees apply
-     (transaction? idempotent? RLS?). Point to ARCHITECTURE.md for the rules. -->
+     For each: trigger and steps, as the user or operator sees them. Don't
+     restate guarantees (transaction, idempotency, RLS) — point to the owner
+     doc: "→ ARCHITECTURE.md §Data integrity". -->
 
 ### {{FLOW_NAME}}
 {{FLOW_STEPS}}
 
 ## External integrations
 
-{{INTEGRATIONS}}  <!-- each third-party service, what it's used for, retry/cache policy -->
+| Service | Used for | Owner doc |
+|---|---|---|
+{{INTEGRATIONS}}  <!-- what each third-party service is used for; retry/cache policy lives in ARCHITECTURE.md -->
 
 ## Environments
 

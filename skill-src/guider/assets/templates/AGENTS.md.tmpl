@@ -1,33 +1,23 @@
 <!--
   AGENTS.md template (filled by `/guider init`).
-  This is the project's canonical, tool-neutral entry point for engineering
-  standards. Codex / ChatGPT and most coding agents read AGENTS.md natively, and
-  CLAUDE.md imports it so Claude Code picks it up too — so keep the standards
-  here, in ONE place. Keep this file SHORT: it is read on every task. Detail goes
-  in the sibling docs and is reached through the pointer table. Remove sections
-  that don't apply rather than leaving placeholders.
+  This is the project's canonical, tool-neutral entry point. Codex / ChatGPT and
+  most coding agents read it natively, and CLAUDE.md imports it so Claude Code
+  loads it too. It is read on EVERY task, so it is a router, not a manual: rules
+  that hold in every session, plus where everything else lives. Budget: 150
+  lines (references/docs-standard.md). Remove sections that don't apply rather
+  than leaving placeholders, and delete this comment once filled.
 -->
 
 # AGENTS.md — {{PROJECT_NAME}}
 
-How we build things here. Read this first; follow the pointers for detail. This
-file is agent-neutral — it applies whether you are Claude, Codex / ChatGPT, or
-another coding agent.
-
-## Prime directive
-
-Simplicity above all. The minimum that solves the problem, named clearly,
-changed surgically. Every rule below bends to this one.
-
-## Behavioral principles
-
-<!-- Merge the canonical multica-ai/andrej-karpathy-skills principles here
-     (fetched during init), or the bundled paraphrase if offline. Attribute it. -->
-{{KARPATHY_PRINCIPLES}}
+> Router. This file holds only the rules that apply to every task and a map of
+> where the rest lives. Open the owner doc a task needs, and nothing more.
 
 ## Hard rules (worth interrupting a change over)
 
-<!-- The handful the team most wants enforced. Examples — keep the project's real ones: -->
+<!-- The handful the team most wants enforced. Irreversible actions (direct data
+     writes, money, outbound email, production) belong here first. Examples —
+     keep the project's real ones: -->
 - Descriptive names always; in `map`/`filter`/etc. use the singular. Rename
   cryptic identifiers in code you touch. ({{NAMING_STRICTNESS}})
 - Never compare against a string literal where a domain enum exists; never show
@@ -37,21 +27,45 @@ changed surgically. Every rule below bends to this one.
 - Concurrent writes go in a transaction; critical operations
   ({{CRITICAL_OPS}}) are idempotent.
 - Never swallow an error; log with context and propagate or return typed.
-- Line length: {{LINE_LENGTH}} (enforced by {{FORMATTER}}).
-- Tests: fast = `{{FAST_TEST_CMD}}` (run before pushing), full =
-  `{{FULL_TEST_CMD}}` (CI).
+{{ENTRY_FILE_LOCK}}  <!-- e.g. "- Never edit this file without {{OWNER}}'s explicit approval; propose the change and wait." Only if chosen at init. -->
 
-## Where to look
+## How we work
 
-| For… | See |
+<!-- Condensed behavioral principles, one line each, attributed (see init
+     Phase 5 step 4), plus the project's own working rules. -->
+{{KARPATHY_PRINCIPLES}}
+- **One source of truth**: a business rule or a UI component exists in ONE place;
+  look for the existing one before writing another.
+
+Docs language: {{DOCS_LANGUAGE}} · code and identifiers: {{CODE_LANGUAGE}}.
+
+## The project in five lines
+
+- **What it is**: {{PRODUCT_SUMMARY_ONE_LINE}}
+- **Stack**: {{STACK_ONE_LINE}}
+- **Folders**: {{FOLDERS_ONE_LINE}}
+- **Commands**: fast tests `{{FAST_TEST_CMD}}` · full tests `{{FULL_TEST_CMD}}` · lint `{{LINT_CMD}}`
+- **External integrations**: {{INTEGRATIONS_ONE_LINE}}
+
+## Routing — before you touch X, read Y
+
+| If the task touches… | Read first |
 |---|---|
-| Architecture, bounded contexts, state machines, folders, RLS/encryption decisions | `ARCHITECTURE.md` |
-| What the product is — domains, key flows, integrations, environments | `APPLICATION.md` |
-| Full code conventions | `ARCHITECTURE.md` / `{{CONVENTIONS_DOC}}` |
-{{EXTRA_DOC_POINTERS}}
+| Architecture, schema, endpoints, state machines, folders | `ARCHITECTURE.md` |
+| What the product does — domains, flows, screens | `APPLICATION.md` |
+{{EXTRA_ROUTES}}  <!-- one row per domain doc, e.g. "| Payments | `docs/PAYMENTS.md` |" -->
+| Anything not listed; specs and plans | `docs/README.md` (index) |
+| "Is this already tracked?" | `BACKLOG.md` + `docs/README.md` |
 
-## Gates
+## Workflow
 
-Format + lint + secret-scan on commit; type-check + fast tests on push;
-lint + type + fast tests + secret scan on every PR; full tests + audit on merge.
-See `{{CI_DOC_OR_PATH}}`. {{IMPECCABLE_NOTE}}
+- **Gates**: format + lint + secret-scan on commit; type-check + fast tests on push;
+  full tests + audit on merge. See `{{CI_DOC_OR_PATH}}`. {{IMPECCABLE_NOTE}}
+- **Line length**: {{LINE_LENGTH}} (enforced by {{FORMATTER}}).
+{{WORKFLOW_RULES}}  <!-- branch/PR rules, migrations, secrets, review steps -->
+
+## When a task changes something documented
+
+- Update the owner doc in the SAME change (rules: `docs/README.md`).
+- A new rule goes to ONE doc, its owner, never copied elsewhere.
+- `BACKLOG.md` holds open items only: delete what you finished.

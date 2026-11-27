@@ -142,7 +142,7 @@ You can't audit against standards you haven't read. Before scanning:
 
 1. **Read the project's own docs.** If Guider-authored standards exist
    (`AGENTS.md`, or a `CLAUDE.md` that imports it), read them and their siblings
-   (`ARCHITECTURE.md`, `APPLICATION.md`, any `TESTING.md` /
+   (`ARCHITECTURE.md`, `APPLICATION.md`, `docs/README.md`, any `TESTING.md` /
    `SECURITY.md`). **The project's documented choices are the contract** and
    override the Guider defaults everywhere they speak — its line length, its
    folder convention, which tables have RLS, which operations are idempotent, its
@@ -238,6 +238,21 @@ area, the recurring violations to grep for and reason about:
   drifted from what the code generates.
 - No CI drift gate enforcing that the spec stays in sync.
 
+**Documentation** (`docs-standard.md`)
+- A doc over its budget (the project's, or the defaults) — measure with `wc -m`
+  / `wc -l` and report the number against the budget.
+- The same rule stated in two docs (or in a doc and the entry file) instead of
+  living in its owner and being pointed to. Sweep for it: grep a distinctive
+  phrase or identifier of the rule across every doc, not only the pair you saw.
+- History inside a reference doc: "until <date> it was…", "fixed in this
+  session", changelog sections, audit findings left in prose.
+- `BACKLOG.md` carrying done items, analysis, counts or "won't do" decisions,
+  or items longer than three lines.
+- Code pointers by line number; `§Section` pointers to a section that no longer
+  exists; lines over the agreed length.
+- A shipped spec still read as a source of rules (no `Status: done` header, and
+  its rules never moved to the owner doc).
+
 **Quality gates** (`quality-gates.md`)
 - Missing or unenforced formatter/linter, pre-commit hook, secret scan, or CI
   gate; gates that exist but aren't required branch-protection checks.
@@ -267,10 +282,13 @@ Every finding carries exactly these fields, so `fix` can act on it mechanically:
 - **risk** — `safe` for mechanical, behavior-preserving edits (renames, enum
   extraction, adding a TTL, magic-string→constant, DTO mapping, DI wiring,
   recording a generalized rule in the project's contract docs — see
-  `fix-flow.md`'s "Closing the loop"), or `risky` for anything touching a DB
-  migration, RLS policy, behavior-changing transaction wrapping, schema, or
-  encryption. **This field decides how `fix` treats the finding** — `fix`
-  applies `safe` automatically and pauses on `risky` — so classify deliberately.
+  `fix-flow.md`'s "Closing the loop" — and relocating doc sections verbatim to
+  their owner doc), or `risky` for anything touching a DB migration, RLS policy,
+  behavior-changing transaction wrapping, schema, or encryption, and for doc
+  changes that delete or reword content (removing backlog items, cutting history,
+  merging two diverging statements of a rule). **This field decides how `fix`
+  treats the finding** — `fix` applies `safe` automatically and pauses on
+  `risky` — so classify deliberately.
 
 For a finding shaped by "Census, not incident," put the sweep result in
 **location** (e.g. "src/lib/foo.ts:42, and 11 more — see list" or "23 rows

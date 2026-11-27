@@ -95,6 +95,17 @@ Cover these, skipping any the scan already answered:
 - Language for the generated docs (default: match the repo's existing
   comments/README language).
 
+**Docs** (`docs-standard.md`) — brownfield: measure the existing docs first
+(`wc -m`, longest line) and show the numbers against the default budgets.
+- Beyond the core set (`AGENTS.md`, `CLAUDE.md`, `ARCHITECTURE.md`,
+  `APPLICATION.md`, `docs/README.md`), which docs does the project want: a
+  `BACKLOG.md`, a decision log (`docs/DECISIONS.md`), `docs/PRINCIPLES.md`,
+  one doc per domain? Don't offer what the project's size doesn't earn.
+- Keep the default budgets and the 120-character line, or adjust?
+- Lock the entry file? Some owners want `AGENTS.md` changed only with their
+  explicit approval — agents propose, never apply. If yes, who approves?
+- Wire `check-docs.mjs` into the pre-commit hook?
+
 **Domain & architecture**
 - What are the core domains/bounded contexts, in the user's words? (Confirm or
   correct what you inferred from folders.)
@@ -173,7 +184,9 @@ on — don't pad the interview.
 Before writing anything, lay out exactly what you'll create or change:
 
 - which docs (`AGENTS.md` + its thin `CLAUDE.md` importer, `ARCHITECTURE.md`,
-  `APPLICATION.md`, any extras) and the headline content of each;
+  `APPLICATION.md`, `docs/README.md`, any extras chosen in the Docs round) and
+  the headline content of each; for brownfield docs over budget, what moves
+  where (a relocation plan, not a rewrite);
 - which gates you'll scaffold (formatter/linter config, pre-commit hooks,
   secret scan, CI workflow) and which already exist and will be left alone;
 - whether you're adding the optional CI-automated `/guider audit` workflow
@@ -193,9 +206,12 @@ Now write, using the templates in `assets/templates/`. Rules:
 1. **Fill, don't stub.** Replace every placeholder with a real answer from the
    scan or interview. If a section genuinely doesn't apply (no frontend, no
    state machines), remove it rather than leaving a `TODO`.
-2. **`AGENTS.md` is the canonical entry point; keep it short.** Karpathy
-   principles, the project's hard rules, and a pointer table to the sibling
-   docs. Detail lives in the siblings. Then write a **thin `CLAUDE.md`** that
+2. **`AGENTS.md` is the canonical entry point; write it as a router.** The
+   project's hard rules, the condensed Karpathy principles, and a "before you
+   touch X, read Y" routing table — by trigger, not by doc name, because an
+   agent only opens a doc it knows it needs. Detail lives in the siblings;
+   150 lines is the budget (`docs-standard.md`). If the user locked the entry
+   file, write the lock as a hard rule. Then write a **thin `CLAUDE.md`** that
    imports it (from `assets/templates/CLAUDE.md.tmpl`) — it must contain
    `@AGENTS.md` and no duplicated rules, so Claude Code loads the same standards
    while Codex / ChatGPT reads `AGENTS.md` natively. One source of truth, two
@@ -221,16 +237,19 @@ Now write, using the templates in `assets/templates/`. Rules:
      floor (irreducible safety-critical content + the leanest honest index)
      lands above the target, say so with the real measurements and let the
      user choose between accepting it or cutting something concrete.
-4. **Merge the Karpathy principles into `AGENTS.md`.** Prefer fetching the
-   canonical file the way its repo documents it, then appending under a clearly
-   attributed heading:
+4. **Merge the Karpathy principles into `AGENTS.md`, condensed** — one line
+   per principle, in the docs language, attributed and linked to the source.
+   The entry file is read on every task, so the full upstream text doesn't
+   belong there; fetch it only to check the condensed form is still faithful,
+   or save it to a companion doc (e.g. `docs/KARPATHY.md`) if the user wants
+   the full text:
    ```bash
    # canonical source: https://github.com/multica-ai/andrej-karpathy-skills
    curl -fsSL https://github.com/multica-ai/andrej-karpathy-skills/raw/refs/heads/main/CLAUDE.md \
-     >> AGENTS.md
+     > docs/KARPATHY.md
    ```
-   If there's no network access, use the bundled paraphrase in
-   `assets/karpathy-principles.md` instead, with the same attribution. When an
+   Offline, condense the bundled paraphrase in `assets/karpathy-principles.md`
+   (its headings are the four lines), with the same attribution. When an
    `AGENTS.md` (or a full `CLAUDE.md`) already exists, merge these in as a
    section — don't duplicate or clobber the user's existing content. If the
    project already keeps its standards in a full `CLAUDE.md`, you may keep that
@@ -239,7 +258,16 @@ Now write, using the templates in `assets/templates/`. Rules:
 5. **Split arch/flows out.** Put bounded contexts, layering, folder patterns,
    state machines, and data-integrity decisions in `ARCHITECTURE.md`; put the
    product/domain/flows narrative in `APPLICATION.md`; leave pointers in
-   `AGENTS.md`.
+   `AGENTS.md`. Each fact goes to exactly one owner doc (`docs-standard.md` §1);
+   a flow in `APPLICATION.md` points to its guarantees, it doesn't restate them.
+   Write `docs/README.md` from `docs-README.md.tmpl` (the owner-of-each-topic
+   table), plus whichever of `BACKLOG.md` / `docs/DECISIONS.md` the user chose.
+   Brownfield docs over budget: relocate sections to their owner, verbatim,
+   with a before/after character count so nothing goes missing — trimming
+   prose is a separate, user-approved step. If the user wanted the docs gate,
+   copy `assets/check-docs.mjs` to the project's scripts folder, write any
+   budget the user changed to `.guider-docs.json`, and add the script to the
+   pre-commit hook (`quality-gates.md` §2).
 6. **Scaffold gates surgically** (see `references/quality-gates.md` for the
    per-stack specifics). Only add what's missing; edit existing configs in
    place with a visible diff. Never install dependencies or run hooks during

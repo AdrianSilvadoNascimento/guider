@@ -47,6 +47,16 @@ A commit should be blocked by: formatter, linter, and a **secret scan** (below).
 Keep it under a few seconds — type-checking and tests belong in pre-push/CI, not
 pre-commit, or the hook gets bypassed.
 
+**Docs budgets (optional).** When the user opted in at `init`, add the copied
+`check-docs.mjs` (`assets/check-docs.mjs`, Node ≥ 18, no dependencies): run it
+on staged `*.md` files (`node scripts/check-docs.mjs <files>` from lint-staged
+or a `pre-commit` local hook). It fails on a doc over budget or a line over the
+agreed length, and only warns on history phrases and line-number pointers;
+budgets live in an optional `.guider-docs.json` at the repo root
+(`docs-standard.md` §7). Markdown is often in `.prettierignore`, so this is the
+only gate that keeps the docs an agent reads on every task from growing
+unchecked.
+
 ## 3. Secret-leak hook
 
 A leaked credential in history is expensive to undo and sometimes impossible to
