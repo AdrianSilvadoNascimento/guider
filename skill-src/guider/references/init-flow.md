@@ -202,6 +202,11 @@ Cover these, skipping any the scan already answered:
   configure.) If no, skip the rest of this round entirely — it's opt-in, not
   a default.
 
+**Agent hooks** (`agent-hooks.md`)
+- Install Guider's agent hooks for Claude Code and/or Codex? Default: all three
+  (session-start rules, pre-tool guard, post-edit checks).
+- The fastest per-file lint command, for the post-edit hook.
+
 **Token economy** (SKILL.md §Token economy)
 - Install the caveman plugin and use it proactively for agent replies and memory
   files? Default: recommend it; docs, commits and PRs stay in normal prose.
@@ -245,6 +250,7 @@ Before writing anything, lay out exactly what you'll create or change:
 - whether you're adding the optional CI-automated `/guider audit` workflow
   (`ci-automation.md`), if the user opted in;
 - the Karpathy merge into `AGENTS.md`;
+- the agent hooks chosen and the settings files they merge into;
 - the caveman recommendation, if accepted (install command only);
 - the observability signals and SEO setup agreed (`observability.md`, `seo.md`),
   as proposed install commands, not installs;
@@ -334,31 +340,37 @@ Now write, using the templates in `assets/templates/`. Rules:
    release-age key for each package manager and update bot in use, edited in
    place with a diff; add the hard rule to `AGENTS.md`. Flag any tool too old to
    honor the key rather than writing a setting it ignores.
-9. **Install the code graph** if accepted (`code-graph.md`): copy
+9. **Install the agent hooks** if accepted (`agent-hooks.md`): copy
+   `assets/hooks/` to `scripts/guider-hooks/`, merge
+   `claude-settings.json.tmpl` into `.claude/settings.json` and/or write
+   `codex-hooks.json.tmpl` to `.codex/hooks.json` (merge, show the diff), and
+   write `.guider-hooks.json` with the lint command. Tell Codex users to trust
+   the hooks via `/hooks`.
+10. **Install the code graph** if accepted (`code-graph.md`): copy
    `assets/graph.mjs` next to `check-docs.mjs`, write `.guider-graph.json` with
    only the boundaries the user confirmed, add `.guider/` to `.gitignore`. The
    first `build` is read-only on source files — run it and show the summary.
-10. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
+11. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
    "What `/guider init` records") and add its two hard rules to `AGENTS.md`.
    Point at `/security-review` per change and a periodic whole-repo security
    audit; Guider's own audit covers the rules, not a penetration test.
-11. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+12. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
    tool generating the spec, where the spec file lives, the served docs route and
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-12. **Record observability and SEO** (`observability.md`, `seo.md`): the chosen
+13. **Record observability and SEO** (`observability.md`, `seo.md`): the chosen
    tools, init location, scrubbing config, sample rates, health endpoints and
    alert routing in `ARCHITECTURE.md`; for public frontends, the metadata helper,
    sitemap/robots source and the Lighthouse budget. Scaffold the Lighthouse CI
    gate if agreed; propose SDK install commands, don't run them.
-13. **Recommend the runtime infrastructure** where the interview surfaced a need
+14. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-14. **Scaffold the CI-automated audit workflow** only if the user opted in
+15. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
@@ -370,5 +382,5 @@ Now write, using the templates in `assets/templates/`. Rules:
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 14 applied), and the one or two follow-ups worth doing next. Then stop —
+step 15 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.
