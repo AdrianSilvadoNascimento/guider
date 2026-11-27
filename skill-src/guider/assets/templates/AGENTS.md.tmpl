@@ -27,6 +27,10 @@
 - Concurrent writes go in a transaction; critical operations
   ({{CRITICAL_OPS}}) are idempotent.
 - Never swallow an error; log with context and propagate or return typed.
+- Every lookup by a client-supplied ID is scoped to the caller ({{AUTHZ_CHECK}});
+  the tenant/user comes from the session, never the request.
+- Input never becomes code: parameterized queries only, commands take an args
+  array, no raw HTML from users.
 {{ENTRY_FILE_LOCK}}  <!-- e.g. "- Never edit this file without {{OWNER}}'s explicit approval; propose the change and wait." Only if chosen at init. -->
 
 ## How we work
@@ -53,6 +57,7 @@ Docs language: {{DOCS_LANGUAGE}} · code and identifiers: {{CODE_LANGUAGE}}.
 |---|---|
 | Architecture, schema, endpoints, state machines, folders | `ARCHITECTURE.md` |
 | What the product does — domains, flows, screens | `APPLICATION.md` |
+| Auth, permissions, IDs from the client, raw SQL/shell/HTML | `ARCHITECTURE.md` §Security |
 {{EXTRA_ROUTES}}  <!-- one row per domain doc, e.g. "| Payments | `docs/PAYMENTS.md` |" -->
 | Anything not listed; specs and plans | `docs/README.md` (index) |
 | "Is this already tracked?" | `BACKLOG.md` + `docs/README.md` |

@@ -62,6 +62,11 @@ Things to determine, with where to look:
   `zod-to-openapi`), served at a route, exported as a file, and drift-gated in
   CI? Note whether it's generated-from-code or a hand-written spec that can drift
   (see `api-docs.md`).
+- **Security posture** (`security.md`) — how authorization is done today (a
+  policy module, guards/middleware, scoped repositories, RLS, or ad hoc checks in
+  handlers); auth provider/library; whether the app is multi-tenant; public vs.
+  authenticated vs. admin routes; raw SQL, shell calls and HTML-injection sinks;
+  LLM features with tool access. Note the gaps; don't audit them yet.
 - **Existing quality tooling** — formatter/linter configs (`.eslintrc*`,
   `biome.json`, `ruff.toml`, `.prettierrc`, `.editorconfig`), `.pre-commit-config.yaml`
   or Husky/lint-staged, secret scanners (`.gitleaks.toml`, trufflehog config),
@@ -123,6 +128,15 @@ Cover these, skipping any the scan already answered:
 - Is there sensitive data needing **encryption** or **RLS**, and is multi-tenant
   isolation a requirement?
 - External APIs that need **retry-with-backoff** and **TTL caching**.
+
+**Security** (`security.md`) — confirm the scan, ask only what it couldn't show
+- Who owns what: user, tenant, org? Which roles exist, and where should the
+  authorization check live (one policy module is the default recommendation)?
+- Which routes are public, and which are admin-only?
+- Multi-tenant? If yes, is database-enforced isolation (RLS) wanted
+  (`data-integrity.md`)?
+- Any operation on money, credits, stock or quotas that a user could race?
+- LLM features that read user or fetched content and can call tools?
 
 **Caching & workers**
 - Are there expensive or hot reads worth a **cache-aside** layer? If there's no
@@ -274,18 +288,22 @@ Now write, using the templates in `assets/templates/`. Rules:
    `init` — propose the install commands and let the user run them.
 7. **Recommend Impeccable** if there's a frontend, and offer to run its
    installer.
-8. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+8. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
+   "What `/guider init` records") and add its two hard rules to `AGENTS.md`.
+   Point at `/security-review` per change and a periodic whole-repo security
+   audit; Guider's own audit covers the rules, not a penetration test.
+9. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
    tool generating the spec, where the spec file lives, the served docs route and
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-9. **Recommend the runtime infrastructure** where the interview surfaced a need
+10. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-10. **Scaffold the CI-automated audit workflow** only if the user opted in
+11. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
@@ -297,5 +315,5 @@ Now write, using the templates in `assets/templates/`. Rules:
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 10 applied), and the one or two follow-ups worth doing next. Then stop —
+step 11 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.

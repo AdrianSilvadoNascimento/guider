@@ -54,6 +54,14 @@
 - **Idempotency:** {{IDEMPOTENT_OPS}}  <!-- which operations, where the keys come from, TTL -->
 - **External calls:** {{RETRY_CACHE_POLICY}}  <!-- retry/backoff + cache TTLs per integration -->
 
+## Security
+
+- **Authorization model:** {{AUTHZ_MODEL}}  <!-- who owns what (user/tenant/org), roles, where the check lives (policy module, guards, scoped repositories, RLS) -->
+- **Route exposure:** {{ROUTE_EXPOSURE}}  <!-- public vs authenticated vs admin-only, and how each is enforced -->
+- **Authentication:** {{AUTHN_CHOICE}}  <!-- provider/library, session or token model, rate limits on login/reset -->
+- **Raced operations:** {{RACED_OPS}}  <!-- money/credits/stock/quota paths and the lock or atomic update that guards each -->
+- **LLM features:** {{LLM_TOOL_POLICY}}  <!-- omit if none: what untrusted input reaches the model, which tools it can call, what needs confirmation -->
+
 ## Runtime infrastructure
 
 - **Cache:** {{CACHE_CHOICE}}  <!-- tool (e.g. Upstash Redis), what's cached, TTL strategy, invalidation rule. Omit if none. -->

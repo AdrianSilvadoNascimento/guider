@@ -5,7 +5,8 @@ description: >-
   architectural guardrails for a codebase, and onboards itself via `/guider
   init`. Use whenever the user wants to set up or apply project standards:
   conventions, naming, linters, formatters, pre-commit hooks, secret scanning,
-  CI gates, data integrity (RLS, encryption, transactions, idempotency, race
+  CI gates, application security (IDOR/broken authorization, SQL/command/XSS/SSRF
+  injection, sessions, race conditions and locks), data integrity (RLS, encryption, transactions, idempotency, race
   conditions), enums over string literals, bounded contexts and state machines,
   folder structure, fast/full test split, responsibility separation, DRY, and
   API docs (OpenAPI/Swagger generated from code and drift-gated). Also trigger
@@ -134,6 +135,7 @@ the matching reference only when a change actually touches that area:
 | Naming, layering, DTO boundaries, DRY, responsibility separation | Descriptive names; never reach past the repository layer; never expose ORM entities; one source of truth for shared types | `references/conventions.md` |
 | Enums over string literals | Never branch on or compare raw string literals; use a domain enum/constant; never show a raw enum key to a user — translate via a label map | `references/conventions.md` |
 | Linters, formatters, pre-commit, secret scanning, CI | Format + lint + typecheck + fast tests block the commit/PR; full tests + secret scan + advisory audit block the merge | `references/quality-gates.md` |
+| Security: authorization/IDOR, injection, sessions, exploitable races | Every lookup by client ID is scoped to the caller; input never becomes code; security findings are always high-severity, confirmed before fixing, and shipped with a negative test | `references/security.md` |
 | RLS, encryption, transactions, idempotency, race conditions | Integrity is enforced at the lowest layer that can enforce it (DB > app); concurrent writes go through a transaction; critical operations are idempotent | `references/data-integrity.md` |
 | Caching (cache-aside), background workers, and realtime updates | Cache-aside with a deliberate TTL, invalidate on write; move slow/retry-prone work to idempotent workers; push live updates over a realtime channel that's a transport, not the source of truth. Recommend Upstash Redis, Trigger.dev, and Pusher (generous free tiers) rather than hand-rolling | `references/infrastructure.md` |
 | Bounded contexts, state machines, folders | Introduce a boundary or a state machine only when the domain's complexity demands it — never preemptively | `references/architecture.md` |
