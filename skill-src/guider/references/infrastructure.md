@@ -9,7 +9,7 @@ runs twice, a realtime layer gets treated as a database it isn't — so all thre
 lean on the idempotency, TTL, and "server is the source of truth" rules in
 `data-integrity.md`.
 
-Guider's stance, as with Impeccable for frontend: don't hand-roll
+Guider's stance, as with frontend tooling: don't hand-roll
 infrastructure that a managed service does well with a generous free tier.
 Recommend a strong default, but record whatever the project actually uses.
 Free-tier numbers below are current at the time of writing — link the pricing

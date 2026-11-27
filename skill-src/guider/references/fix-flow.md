@@ -60,7 +60,11 @@ class.
 
 **`risky` — confirm before applying.**
 DB migrations, RLS policies, behavior-changing transaction wrapping, schema
-changes, encryption. For each, show the user the exact change you intend (the
+changes, encryption, and every security finding (`security.md`). A security fix
+is not done until its negative test exists and passes: user B can't read or
+change user A's record, the injected payload is treated as data, the parallel
+requests leave the invariant intact. Write the test first, watch it fail
+against the old code where practical, then apply the fix. For each, show the user the exact change you intend (the
 diff or the migration SQL) and what it affects, and get a yes before writing.
 Batch related risky changes into one confirmation when they're genuinely one
 decision; otherwise confirm them individually. Never auto-apply a `risky`
@@ -74,13 +78,19 @@ summary. A correct skip beats a confident wrong edit.
 
 Work area by area so related edits land together and the diff reads coherently.
 
+**Know the blast radius before editing.** If the project has
+`scripts/graph.mjs`, run `impact` on each file you are about to change
+(`code-graph.md`). Dependents tell you which callers a signature or behavior
+change reaches; the tests it lists are the ones Phase 3 must run.
+
 ---
 
 ## Phase 3 — Verify
 
 Mechanical edits at scale introduce mechanical mistakes. After applying, run the
 project's gates — the ones documented in its `AGENTS.md` / `quality-gates.md`:
-formatter check, linter, type-check, and the **fast** test suite. Don't run the
+formatter check, linter, type-check, and the **fast** test suite — plus every
+test `impact` listed for the edited files, even if it sits in the full suite. Don't run the
 full/e2e suite unless the user asks; that's a CI-weight gate.
 
 Report what passed and what failed. If a fix broke a gate, fix the fix (or revert

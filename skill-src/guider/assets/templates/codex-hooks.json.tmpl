@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node {{SCRIPTS_DIR}}/guider-hooks/session-start.mjs", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node {{SCRIPTS_DIR}}/guider-hooks/pre-tool-guard.mjs", "timeout": 10 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node {{SCRIPTS_DIR}}/guider-hooks/post-edit.mjs", "timeout": 30 }
+        ]
+      }
+    ]
+  }
+}

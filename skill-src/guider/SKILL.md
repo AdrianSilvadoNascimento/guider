@@ -1,20 +1,20 @@
 ---
 name: guider
 description: >-
-  Establishes and enforces engineering conventions, quality gates, and
-  architectural guardrails for a codebase, and onboards itself via `/guider
-  init`. Use whenever the user wants to set up or apply project standards:
-  conventions, naming, linters, formatters, pre-commit hooks, secret scanning,
-  CI gates, data integrity (RLS, encryption, transactions, idempotency, race
-  conditions), enums over string literals, bounded contexts and state machines,
-  folder structure, fast/full test split, responsibility separation, DRY, and
-  API docs (OpenAPI/Swagger generated from code and drift-gated). Also trigger
-  on "set conventions", "harden this repo", "audit against standards", "apply
-  the audit fixes", "document the API"; on `/guider init`, `/guider audit`,
-  `/guider fix`, or `/guider spec`; on requests to generate an AGENTS.md /
-  CLAUDE.md / ARCHITECTURE.md / APPLICATION.md / BACKLOG.md, or to organize,
-  slim down or standardize the project's docs; or when asked to follow the project's
-  established standards while writing code.
+  Establishes and enforces engineering conventions, quality gates and
+  architectural guardrails, onboarding via `/guider init`. Use whenever the
+  user wants to set up or apply project standards: naming, linters/formatters,
+  pre-commit and agent hooks,
+  secret scanning, CI gates, application security (IDOR, injection, sessions,
+  races and locks), data integrity (RLS, transactions, idempotency), dependency
+  release quarantine, observability, SEO, frontend tooling, a code graph for
+  impact analysis, enums over string literals, bounded contexts, state machines,
+  fast/full tests, DRY, and OpenAPI docs generated from code. Also trigger
+  on "set conventions", "harden this repo", "audit against standards", "security
+  audit", "apply the audit fixes", "document the API"; on `/guider init`,
+  `/guider audit`, `/guider fix`, or `/guider spec`; on requests to generate or
+  slim down AGENTS.md / CLAUDE.md / ARCHITECTURE.md / APPLICATION.md /
+  BACKLOG.md; or when asked to follow the project's standards while coding.
 ---
 
 # Guider
@@ -134,12 +134,18 @@ the matching reference only when a change actually touches that area:
 | Naming, layering, DTO boundaries, DRY, responsibility separation | Descriptive names; never reach past the repository layer; never expose ORM entities; one source of truth for shared types | `references/conventions.md` |
 | Enums over string literals | Never branch on or compare raw string literals; use a domain enum/constant; never show a raw enum key to a user — translate via a label map | `references/conventions.md` |
 | Linters, formatters, pre-commit, secret scanning, CI | Format + lint + typecheck + fast tests block the commit/PR; full tests + secret scan + advisory audit block the merge | `references/quality-gates.md` |
+| Security: authorization/IDOR, injection, sessions, exploitable races | Every lookup by client ID is scoped to the caller; input never becomes code; security findings are always high-severity, confirmed before fixing, and shipped with a negative test | `references/security.md` |
 | RLS, encryption, transactions, idempotency, race conditions | Integrity is enforced at the lowest layer that can enforce it (DB > app); concurrent writes go through a transaction; critical operations are idempotent | `references/data-integrity.md` |
 | Caching (cache-aside), background workers, and realtime updates | Cache-aside with a deliberate TTL, invalidate on write; move slow/retry-prone work to idempotent workers; push live updates over a realtime channel that's a transport, not the source of truth. Recommend Upstash Redis, Trigger.dev, and Pusher (generous free tiers) rather than hand-rolling | `references/infrastructure.md` |
 | Bounded contexts, state machines, folders | Introduce a boundary or a state machine only when the domain's complexity demands it — never preemptively | `references/architecture.md` |
+| Observability: errors, analytics, traces, logs | Errors + structured logs for anything deployed; SDKs initialized once; scrub PII in config; recommend Sentry, PostHog, OpenTelemetry | `references/observability.md` |
+| SEO (public frontends) | Server-rendered metadata from one helper; generated sitemap/robots; staging never indexable; Lighthouse CI budget | `references/seo.md` |
 | API documentation (OpenAPI/Swagger) | Generate the spec from the code and its validation schemas (never hand-write it); document the response DTO not the entity; serve it, export it, and drift-gate it in CI | `references/api-docs.md` |
+| Supply chain: dependencies, skills, plugins | Release quarantine — adopt a version only after it has been public 7 days (negotiable, minimum 1); enforce it in the package manager and the update bot; bypass only for a recorded security fix | `references/supply-chain.md` |
+| Agent hooks (Claude Code, Codex) | Enforce while the agent works: hard rules at session start; block secret-file writes and unquarantined installs; lint, docs gate and security-sink warnings after each edit; fail open | `references/agent-hooks.md` |
+| Code graph (imports, hubs, cycles, boundaries) | Ask the graph before re-reading the repo: `impact` before editing a hub, `cycles`/`layers` as findings; graphify adds a semantic layer when present | `references/code-graph.md` |
 | Documentation | One fact in one owner doc, everything else points; current state only (the why goes to a decision log); every doc has a size budget, and over budget means split | `references/docs-standard.md` |
-| Frontend design quality | Recommend the Impeccable skill; don't reinvent a design system | see "Impeccable" below |
+| Frontend tooling | Recommend specialist agent tooling from a menu (Modern Web Guidance, Impeccable, frontend-design, …); don't reinvent a design system | `references/frontend-tooling.md` |
 
 The defaults are starting points. Whatever `/guider init` wrote into the
 project's docs is the real contract — when they disagree, the project wins.
@@ -177,14 +183,39 @@ doc full of unanswered placeholders, and it never scaffolds a doc the project
 didn't ask for. `assets/check-docs.mjs` enforces the budgets and line length in
 the project's pre-commit hook.
 
-## Impeccable (frontend design)
+## Frontend tooling
 
-Guider governs *engineering* standards, not visual taste — those are different
-disciplines. When the project has a frontend, recommend installing the
-Impeccable skill rather than hand-rolling design rules, and offer to run the
-installer. `init` proposes this; outside `init`, suggest it the first time a
-frontend change comes up. See `references/quality-gates.md` for the exact
-command and how to wire its detector into CI.
+Guider governs *engineering* standards, not visual taste. When the project has a
+frontend, recommend specialist agent tooling instead of hand-rolling design
+rules — from a menu, not a single fixed tool: Modern Web Guidance (current
+web-platform practice) by default, plus a design tool such as Impeccable or
+frontend-design when visual quality matters. `init` proposes this; outside
+`init`, suggest it the first time a frontend change comes up. See
+`references/frontend-tooling.md` for the menu and install commands.
+
+## Token economy
+
+Tokens are a budget like any other, and Guider spends them deliberately: a small
+always-loaded `AGENTS.md`, owner docs opened only when a task needs them, and the
+code graph (`references/code-graph.md`) instead of re-reading the repo. For the
+agent's own output, recommend the **caveman** plugin
+(https://github.com/JuliusBrussee/caveman) and suggest using it proactively: terse
+replies that keep every technical fact, `/caveman-compress` on memory files,
+`/caveman-commit` for commit messages.
+
+```bash
+# Claude Code
+claude plugin marketplace add JuliusBrussee/caveman
+claude plugin install caveman@caveman
+# Codex and other agents
+npx skills add JuliusBrussee/caveman -g
+```
+
+Its boundary matches Guider's: compression is for the conversation. Generated
+docs, code comments, commits and PR descriptions stay in normal prose, because
+other people read them. Its install follows the release quarantine
+(`references/supply-chain.md`). `init` offers it; outside `init`, suggest it once
+when a session is clearly burning tokens on long replies.
 
 ## Editing existing files vs. creating new ones
 

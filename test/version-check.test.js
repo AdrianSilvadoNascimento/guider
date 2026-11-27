@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { isNewer, notifyFromCache, refreshCache } from "../lib/version-check.js";
+import { isNewer, latestAged, notifyFromCache, refreshCache } from "../lib/version-check.js";
 
 const pkg = { name: "@adrianfsf/guider", version: "1.2.0" };
 
@@ -48,7 +48,7 @@ test("notifyFromCache prints when the cache knows a newer version", () => {
   assert.match(text(), /Update available/);
   assert.match(text(), /1\.2\.0/);
   assert.match(text(), /1\.5\.0/);
-  assert.match(text(), /npm i -g @adrianfsf\/guider@latest/);
+  assert.match(text(), /npm i -g @adrianfsf\/guider@1\.5\.0/);
 });
 
 test("notifyFromCache stays silent when up to date or cache missing", () => {
@@ -95,4 +95,44 @@ test("refreshCache swallows fetch errors", async () => {
   const cacheFile = tmpCache() + ".nope";
   await refreshCache(pkg, { cacheFile, fetchImpl: async () => { throw new Error("offline"); } });
   assert.equal(fs.existsSync(cacheFile), false); // nothing written, no throw
+});
+
+test("latestAged skips versions still inside the quarantine window", () => {
+  const now = Date.parse("2026-11-27T00:00:00Z");
+  const doc = {
+    "dist-tags": { latest: "1.5.0" },
+    time: {
+      created: "2026-01-01T00:00:00Z",
+      modified: "2026-11-26T00:00:00Z",
+      "1.3.0": "2026-10-01T00:00:00Z",
+      "1.4.0": "2026-11-10T00:00:00Z",
+      "1.5.0-beta.1": "2026-11-12T00:00:00Z",
+      "1.5.0": "2026-11-25T00:00:00Z",
+    },
+  };
+  assert.equal(latestAged(doc, 7, now), "1.4.0");
+  assert.equal(latestAged(doc, 1, now), "1.5.0");
+  assert.equal(latestAged(doc, 0, now), "1.5.0");
+  assert.equal(latestAged({ "dist-tags": { latest: "2.0.0" } }, 7, now), "2.0.0");
+});
+
+test("latestAged never suggests an unpublished or deprecated version", () => {
+  const now = Date.parse("2026-11-27T00:00:00Z");
+  const doc = {
+    "dist-tags": { latest: "2.0.2" },
+    versions: { "2.0.0": {}, "2.0.1-gone": {}, "2.0.2": {}, "1.9.0": { deprecated: "bad build" } },
+    time: { "1.9.0": "2026-09-01T00:00:00Z", "2.0.0": "2026-10-01T00:00:00Z", "2.0.1": "2026-11-01T00:00:00Z", "2.0.2": "2026-11-26T00:00:00Z" },
+  };
+  assert.equal(latestAged(doc, 7, now), "2.0.0");
+});
+
+test("refreshCache records the check even when nothing cleared the quarantine", async () => {
+  const cacheFile = tmpCache();
+  const fresh = new Date().toISOString();
+  const fetchImpl = async () =>
+    new Response(JSON.stringify({ "dist-tags": { latest: "9.0.0" }, versions: { "9.0.0": {} }, time: { "9.0.0": fresh } }), { status: 200 });
+  await refreshCache(pkg, { cacheFile, fetchImpl });
+  const cache = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
+  assert.equal(cache.latest, null);
+  assert.ok(cache.lastCheck > 0);
 });

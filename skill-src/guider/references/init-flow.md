@@ -62,6 +62,20 @@ Things to determine, with where to look:
   `zod-to-openapi`), served at a route, exported as a file, and drift-gated in
   CI? Note whether it's generated-from-code or a hand-written spec that can drift
   (see `api-docs.md`).
+- **Observability** (`observability.md`) — error reporting, analytics, tracing
+  and logging SDKs already present (`@sentry/*`, `posthog-*`,
+  `@opentelemetry/*`, pino/winston/structlog), where they're initialized, and
+  any health endpoints.
+- **SEO** (`seo.md`, public frontends only) — rendering mode per public route,
+  metadata API usage, `robots.txt`/sitemap, JSON-LD.
+- **Supply chain** (`supply-chain.md`) — package managers and their versions,
+  lockfiles, Renovate/Dependabot config, and any release-age/cooldown setting
+  already present.
+- **Security posture** (`security.md`) — how authorization is done today (a
+  policy module, guards/middleware, scoped repositories, RLS, or ad hoc checks in
+  handlers); auth provider/library; whether the app is multi-tenant; public vs.
+  authenticated vs. admin routes; raw SQL, shell calls and HTML-injection sinks;
+  LLM features with tool access. Note the gaps; don't audit them yet.
 - **Existing quality tooling** — formatter/linter configs (`.eslintrc*`,
   `biome.json`, `ruff.toml`, `.prettierrc`, `.editorconfig`), `.pre-commit-config.yaml`
   or Husky/lint-staged, secret scanners (`.gitleaks.toml`, trufflehog config),
@@ -124,6 +138,31 @@ Cover these, skipping any the scan already answered:
   isolation a requirement?
 - External APIs that need **retry-with-backoff** and **TTL caching**.
 
+**Observability** (`observability.md`)
+- Which signals are wanted now: errors (Sentry by default), product analytics
+  (PostHog), traces (OpenTelemetry), structured logs? Recommend errors + logs at
+  minimum for anything deployed.
+- Where do alerts go, and who watches them? Any consent requirement for
+  analytics or session replay?
+
+**SEO** (`seo.md`) — only if there's a public, indexable frontend
+- Which routes should be indexed, and which must never be?
+- Canonical host; add a Lighthouse CI gate with budgets?
+
+**Supply chain** (`supply-chain.md`)
+- Release quarantine: keep the 7-day default, or lower it (minimum 1 day)?
+  Applies to dependencies, update bots, skills and plugins alike.
+- Who approves a bypass for an urgent security fix, and where is it recorded?
+
+**Security** (`security.md`) — confirm the scan, ask only what it couldn't show
+- Who owns what: user, tenant, org? Which roles exist, and where should the
+  authorization check live (one policy module is the default recommendation)?
+- Which routes are public, and which are admin-only?
+- Multi-tenant? If yes, is database-enforced isolation (RLS) wanted
+  (`data-integrity.md`)?
+- Any operation on money, credits, stock or quotas that a user could race?
+- LLM features that read user or fetched content and can call tools?
+
 **Caching & workers**
 - Are there expensive or hot reads worth a **cache-aside** layer? If there's no
   cache yet and one would help, recommend **Upstash Redis** (serverless, REST
@@ -163,6 +202,22 @@ Cover these, skipping any the scan already answered:
   configure.) If no, skip the rest of this round entirely — it's opt-in, not
   a default.
 
+**Agent hooks** (`agent-hooks.md`)
+- Install Guider's agent hooks for Claude Code and/or Codex? Default: all three
+  (session-start rules, pre-tool guard, post-edit checks).
+- The fastest per-file lint command, for the post-edit hook.
+
+**Token economy** (SKILL.md §Token economy)
+- Install the caveman plugin and use it proactively for agent replies and memory
+  files? Default: recommend it; docs, commits and PRs stay in normal prose.
+
+**Code graph** (`code-graph.md`)
+- Copy `graph.mjs` and build the structural graph (default yes — it is free and
+  derived). Which layering rules and bounded contexts, already confirmed above,
+  should become machine-checked boundaries in `.guider-graph.json`?
+- Large repo, or lots of docs/specs beside the code? Offer graphify for a
+  semantic graph (optional; its install follows the release quarantine).
+
 **API documentation**
 - If there's an HTTP API and no generated OpenAPI spec (or a hand-written one
   that can drift), propose setting it up the Guider way: generated from the code
@@ -171,8 +226,11 @@ Cover these, skipping any the scan already answered:
   whether the docs route needs auth. `/guider spec` can scaffold or improve this.
 
 **Frontend**
-- Is there a frontend? If so, propose installing **Impeccable** for design
-  quality (see `references/quality-gates.md` for the command).
+- Is there a frontend? If so, which ground should agent tooling cover —
+  platform correctness, design quality, the component library, runtime
+  debugging? Propose from the menu in `frontend-tooling.md` (Modern Web Guidance
+  by default, plus a design tool such as Impeccable or frontend-design when
+  visual quality matters).
 
 Keep a running summary of decisions. When the open questions are answered, move
 on — don't pad the interview.
@@ -192,8 +250,12 @@ Before writing anything, lay out exactly what you'll create or change:
 - whether you're adding the optional CI-automated `/guider audit` workflow
   (`ci-automation.md`), if the user opted in;
 - the Karpathy merge into `AGENTS.md`;
+- the agent hooks chosen and the settings files they merge into;
+- the caveman recommendation, if accepted (install command only);
+- the observability signals and SEO setup agreed (`observability.md`, `seo.md`),
+  as proposed install commands, not installs;
 - the recommended managed services (Upstash for cache, Trigger.dev for workers,
-  Pusher for realtime) where they fit, and the Impeccable recommendation.
+  Pusher for realtime) where they fit, and the chosen frontend tooling.
 
 Get a yes. This is the last cheap moment to redirect.
 
@@ -272,20 +334,43 @@ Now write, using the templates in `assets/templates/`. Rules:
    per-stack specifics). Only add what's missing; edit existing configs in
    place with a visible diff. Never install dependencies or run hooks during
    `init` — propose the install commands and let the user run them.
-7. **Recommend Impeccable** if there's a frontend, and offer to run its
-   installer.
-8. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+7. **Recommend the chosen frontend tooling** (`frontend-tooling.md`) if there's
+   a frontend, and offer to run the installers.
+8. **Configure the release quarantine** (`supply-chain.md`): write the
+   release-age key for each package manager and update bot in use, edited in
+   place with a diff; add the hard rule to `AGENTS.md`. Flag any tool too old to
+   honor the key rather than writing a setting it ignores.
+9. **Install the agent hooks** if accepted (`agent-hooks.md`): copy
+   `assets/hooks/` to `scripts/guider-hooks/`, merge
+   `claude-settings.json.tmpl` into `.claude/settings.json` and/or write
+   `codex-hooks.json.tmpl` to `.codex/hooks.json` (merge, show the diff), and
+   write `.guider-hooks.json` with the lint command. Tell Codex users to trust
+   the hooks via `/hooks`.
+10. **Install the code graph** if accepted (`code-graph.md`): copy
+   `assets/graph.mjs` next to `check-docs.mjs`, write `.guider-graph.json` with
+   only the boundaries the user confirmed, add `.guider/` to `.gitignore`. The
+   first `build` is read-only on source files — run it and show the summary.
+11. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
+   "What `/guider init` records") and add its two hard rules to `AGENTS.md`.
+   Point at `/security-review` per change and a periodic whole-repo security
+   audit; Guider's own audit covers the rules, not a penetration test.
+12. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
    tool generating the spec, where the spec file lives, the served docs route and
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-9. **Recommend the runtime infrastructure** where the interview surfaced a need
+13. **Record observability and SEO** (`observability.md`, `seo.md`): the chosen
+   tools, init location, scrubbing config, sample rates, health endpoints and
+   alert routing in `ARCHITECTURE.md`; for public frontends, the metadata helper,
+   sitemap/robots source and the Lighthouse budget. Scaffold the Lighthouse CI
+   gate if agreed; propose SDK install commands, don't run them.
+14. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-10. **Scaffold the CI-automated audit workflow** only if the user opted in
+15. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
@@ -297,5 +382,5 @@ Now write, using the templates in `assets/templates/`. Rules:
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 10 applied), and the one or two follow-ups worth doing next. Then stop —
+step 15 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.

@@ -54,6 +54,22 @@
 - **Idempotency:** {{IDEMPOTENT_OPS}}  <!-- which operations, where the keys come from, TTL -->
 - **External calls:** {{RETRY_CACHE_POLICY}}  <!-- retry/backoff + cache TTLs per integration -->
 
+## Security
+
+- **Authorization model:** {{AUTHZ_MODEL}}  <!-- who owns what (user/tenant/org), roles, where the check lives (policy module, guards, scoped repositories, RLS) -->
+- **Route exposure:** {{ROUTE_EXPOSURE}}  <!-- public vs authenticated vs admin-only, and how each is enforced -->
+- **Authentication:** {{AUTHN_CHOICE}}  <!-- provider/library, session or token model, rate limits on login/reset -->
+- **Raced operations:** {{RACED_OPS}}  <!-- money/credits/stock/quota paths and the lock or atomic update that guards each -->
+- **LLM features:** {{LLM_TOOL_POLICY}}  <!-- omit if none: what untrusted input reaches the model, which tools it can call, what needs confirmation -->
+
+## Observability
+
+- **Errors:** {{ERROR_TOOL}}  <!-- tool, where it's initialized, release tagging + source maps -->
+- **Analytics:** {{ANALYTICS_TOOL}}  <!-- tool, where event names live, consent rule. Omit if none. -->
+- **Traces & logs:** {{TRACING_LOGGING}}  <!-- OTel backend or none; logger + redaction list; sample rates -->
+- **Health & alerts:** {{HEALTH_ALERTS}}  <!-- /health, /ready, uptime check, where alerts go -->
+{{SEO_SECTION}}  <!-- public frontends only: indexable routes, metadata helper, sitemap/robots source, canonical host, Lighthouse budget -->
+
 ## Runtime infrastructure
 
 - **Cache:** {{CACHE_CHOICE}}  <!-- tool (e.g. Upstash Redis), what's cached, TTL strategy, invalidation rule. Omit if none. -->

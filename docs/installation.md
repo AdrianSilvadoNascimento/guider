@@ -56,6 +56,26 @@ npx @adrianfsf/guider skills update guider --codex
 npx @adrianfsf/guider skills update guider --project
 ```
 
+## Release quarantine
+
+`install` and `update` only take a release that has been public for at least
+**7 days**. A compromised or broken publish is usually caught and pulled within
+that window, so it never reaches you. The newest release still inside the window
+is skipped in favour of the newest one outside it.
+
+```bash
+# Shorten the window (1 day is the floor)
+npx @adrianfsf/guider skills update guider --quarantine-days 1
+GUIDER_QUARANTINE_DAYS=3 npx @adrianfsf/guider skills update
+
+# Skip it on purpose (e.g. an urgent security fix)
+npx @adrianfsf/guider skills update guider --allow-fresh
+```
+
+A pinned `--tag` inside the window is refused, not silently swapped. A `--url`
+install has no publish date, so the quarantine can't apply — pin it with
+`--sha256`. The CLI's own update nudge follows the same window.
+
 ## List
 
 ```bash
@@ -71,7 +91,7 @@ prints a nudge on its next run:
 
 ```
 Update available: 1.2.0 → 1.3.0
-Run npm i -g @adrianfsf/guider@latest to update the CLI.
+Run npm i -g @adrianfsf/guider@1.3.0 to update the CLI.
 ```
 
 The check is best-effort and never blocks a command (it reads from a local

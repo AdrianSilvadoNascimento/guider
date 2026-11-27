@@ -28,13 +28,16 @@ Guider makes a codebase easy to do the right thing in and hard to do the wrong
 thing in — it writes standards into a tool-neutral `AGENTS.md` (imported by
 `CLAUDE.md`), wires linters/hooks/CI to enforce them, and holds the line on every
 change. Four subcommands: `/guider init`, `/guider audit`, `/guider fix`,
-`/guider spec`. See [docs/skill.md](docs/skill.md).
+`/guider spec`. Since v2 it also enforces rules *while the agent works* (agent
+hooks for Claude Code and Codex), keeps a code graph for impact analysis, puts
+application security first in every audit, and holds new dependency, skill and
+plugin versions in a 7-day release quarantine. See [docs/skill.md](docs/skill.md).
 
 ## Documentation
 
 | Guide | What's inside |
 |---|---|
-| [docs/installation.md](docs/installation.md) | Full `install` / `update` / `list` usage, Claude vs. Codex targets, tokens, checksum verification |
+| [docs/installation.md](docs/installation.md) | Full `install` / `update` / `list` usage, Claude vs. Codex targets, release quarantine, tokens, checksum verification |
 | [docs/skill.md](docs/skill.md) | The `guider` skill: subcommands and the docs it generates (`AGENTS.md` / `CLAUDE.md`) |
 | [docs/maintainers.md](docs/maintainers.md) | Releasing a skill version, publishing the CLI, adding a skill to the registry |
 | [docs/development.md](docs/development.md) | Local setup, lint, test, build |

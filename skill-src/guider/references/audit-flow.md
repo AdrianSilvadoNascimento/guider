@@ -67,6 +67,13 @@ explicitly scoped away, also read:
 Don't let "audit the whole repository" quietly narrow to "audit the files that
 look auditable."
 
+**Use the code graph to order the work, not to shrink it** (`code-graph.md`). If
+the project has `scripts/graph.mjs`, refresh it first and read `summary`: scan
+hubs first, report every `cycles` / `layers` hit, and read
+`graphify-out/GRAPH_REPORT.md` when present. When the audit is scoped to a diff
+or a file list, run `impact` on those files and include their direct dependents
+in scope — that is where a changed contract breaks callers.
+
 ## Census, not incident
 
 Bound this before applying it: it's for **medium/high severity** findings — a
@@ -148,8 +155,9 @@ You can't audit against standards you haven't read. Before scanning:
    folder convention, which tables have RLS, which operations are idempotent, its
    enum/label-map location, its fast/full test commands.
 2. **Fall back to defaults for the gaps.** Where the docs are silent, audit
-   against the Guider defaults in `conventions.md`, `data-integrity.md`,
-   `infrastructure.md`, `architecture.md`, and `quality-gates.md`.
+   against the Guider defaults in `conventions.md`, `security.md`,
+   `data-integrity.md`, `supply-chain.md`, `infrastructure.md`,
+   `observability.md`, `seo.md`, `architecture.md`, and `quality-gates.md`.
 3. **If there are no Guider standards at all** (no `AGENTS.md` / `CLAUDE.md`),
    say so plainly: you're auditing
    against generic defaults, the results will be noisier, and `/guider init`
@@ -205,6 +213,47 @@ area, the recurring violations to grep for and reason about:
 - Dead data left behind by removed code — an enum value, a `source`/`type`
   marker, a column a since-deleted function used to populate — that a reader
   could mistake for still-live behavior.
+
+**Security** (`security.md`) — scan this area first and hardest. Every finding
+here is `high` and `risky`, and its resolution names the negative test to add.
+Sweep each pattern across the whole repo (census, not incident) and report the
+grep and its count:
+- Handlers that load a record by a client-supplied ID (`:id`, `params.id`,
+  `findUnique({ where: { id } })`, `get_object_or_404(pk=…)`) with no
+  owner/tenant scope in the query and no policy call — IDOR. Include writes,
+  nested routes, downloads, exports and realtime channel joins.
+- Request bodies spread or bound wholesale into a create/update (mass
+  assignment); `tenantId`/`userId`/`role` read from the body or query string.
+- Admin/internal routes with no server-side role check.
+- Injection sinks fed by input: string-built SQL (`` `…${x}` `` near `query(`,
+  `$queryRawUnsafe`, `.raw(`, `execute(f"…")`), `exec(`/`shell=True`,
+  `innerHTML`/`dangerouslySetInnerHTML`/`v-html`, server-side `fetch(` of a
+  request-supplied URL (SSRF), `path.join` with request params, open redirects.
+- Check-then-act on money, credits, stock or quotas with no atomic update,
+  constraint or lock — exploitable races (`security.md` §Concurrency).
+- Auth/session gaps: fast password hashes, cookies missing
+  `HttpOnly`/`Secure`/`SameSite`, no rate limit on login/reset, CORS `*` with
+  credentials, webhooks without signature verification.
+- Secrets, tokens or PII written to logs or error reports.
+
+**Observability** (`observability.md`)
+- A deployed service with no error reporting, or SDKs initialized in more than
+  one place; no global handler for unhandled errors/rejections.
+- Events, traces or logs carrying user data with no scrubbing/redaction config
+  (`high` — a privacy leak).
+- Analytics event names as scattered string literals; background-job failures
+  that alert no one.
+
+**SEO** (`seo.md`) — public frontends only
+- Public routes rendered client-only, or missing title/description/canonical.
+- No generated sitemap or `robots.txt`; staging/preview deployments indexable.
+- Hand-written JSON-LD beside the data it describes; no Lighthouse/CWV gate.
+
+**Supply chain** (`supply-chain.md`)
+- A package manager or update bot in use with no release-age/cooldown setting,
+  or a window below the project's agreed minimum.
+- No committed lockfile, or CI installing without frozen/ci mode.
+- Scripts or docs installing agent skills, plugins or tools at `@latest`.
 
 **Migrations, scripts & data artifacts** (`data-integrity.md`, "Census, not incident" above)
 - A migration or seed script held to a looser standard than application
@@ -271,7 +320,8 @@ Every finding carries exactly these fields, so `fix` can act on it mechanically:
 - **id** — short and stable, e.g. `NAMING-1`, `DATA-3`. Group by area prefix.
 - **area** — which area above (and thus which reference).
 - **severity** — `high` (a guarantee is actually at risk: integrity, security,
-  a broken-its-own-rule contract violation), `medium` (a real convention
+  a broken-its-own-rule contract violation — every `security.md` finding is
+  `high`), `medium` (a real convention
   violation with limited blast radius), `low` (advisory / consistency).
 - **location** — `file:line` (a range or several lines if the pattern repeats;
   list representative occurrences plus a count rather than 200 lines).
@@ -284,7 +334,8 @@ Every finding carries exactly these fields, so `fix` can act on it mechanically:
   recording a generalized rule in the project's contract docs — see
   `fix-flow.md`'s "Closing the loop" — and relocating doc sections verbatim to
   their owner doc), or `risky` for anything touching a DB migration, RLS policy,
-  behavior-changing transaction wrapping, schema, or encryption, and for doc
+  behavior-changing transaction wrapping, schema, encryption, or any
+  `security.md` finding (authz, injection, sessions, locks), and for doc
   changes that delete or reword content (removing backlog items, cutting history,
   merging two diverging statements of a rule). **This field decides how `fix`
   treats the finding** — `fix` applies `safe` automatically and pauses on
