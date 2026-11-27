@@ -5,7 +5,8 @@ description: >-
   architectural guardrails for a codebase, and onboards itself via `/guider
   init`. Use whenever the user wants to set up or apply project standards:
   conventions, naming, linters, formatters, pre-commit hooks, secret scanning,
-  CI gates, application security (IDOR/broken authorization, SQL/command/XSS/SSRF
+  CI gates, supply-chain release quarantine (minimum release age / cooldown for
+  dependencies, skills and plugins), application security (IDOR/broken authorization, SQL/command/XSS/SSRF
   injection, sessions, race conditions and locks), data integrity (RLS, encryption, transactions, idempotency, race
   conditions), enums over string literals, bounded contexts and state machines,
   folder structure, fast/full test split, responsibility separation, DRY, and
@@ -140,6 +141,7 @@ the matching reference only when a change actually touches that area:
 | Caching (cache-aside), background workers, and realtime updates | Cache-aside with a deliberate TTL, invalidate on write; move slow/retry-prone work to idempotent workers; push live updates over a realtime channel that's a transport, not the source of truth. Recommend Upstash Redis, Trigger.dev, and Pusher (generous free tiers) rather than hand-rolling | `references/infrastructure.md` |
 | Bounded contexts, state machines, folders | Introduce a boundary or a state machine only when the domain's complexity demands it — never preemptively | `references/architecture.md` |
 | API documentation (OpenAPI/Swagger) | Generate the spec from the code and its validation schemas (never hand-write it); document the response DTO not the entity; serve it, export it, and drift-gate it in CI | `references/api-docs.md` |
+| Supply chain: dependencies, skills, plugins | Release quarantine — adopt a version only after it has been public 7 days (negotiable, minimum 1); enforce it in the package manager and the update bot; bypass only for a recorded security fix | `references/supply-chain.md` |
 | Code graph (imports, hubs, cycles, boundaries) | Ask the graph before re-reading the repo: `impact` before editing a hub, `cycles`/`layers` as findings; graphify adds a semantic layer when present | `references/code-graph.md` |
 | Documentation | One fact in one owner doc, everything else points; current state only (the why goes to a decision log); every doc has a size budget, and over budget means split | `references/docs-standard.md` |
 | Frontend design quality | Recommend the Impeccable skill; don't reinvent a design system | see "Impeccable" below |

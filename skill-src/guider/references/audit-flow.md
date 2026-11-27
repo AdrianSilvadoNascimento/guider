@@ -236,6 +236,12 @@ grep and its count:
   credentials, webhooks without signature verification.
 - Secrets, tokens or PII written to logs or error reports.
 
+**Supply chain** (`supply-chain.md`)
+- A package manager or update bot in use with no release-age/cooldown setting,
+  or a window below the project's agreed minimum.
+- No committed lockfile, or CI installing without frozen/ci mode.
+- Scripts or docs installing agent skills, plugins or tools at `@latest`.
+
 **Migrations, scripts & data artifacts** (`data-integrity.md`, "Census, not incident" above)
 - A migration or seed script held to a looser standard than application
   code — no idempotency guard, a destructive statement with no safety check.

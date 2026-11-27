@@ -29,6 +29,8 @@
 - Never swallow an error; log with context and propagate or return typed.
 - Every lookup by a client-supplied ID is scoped to the caller ({{AUTHZ_CHECK}});
   the tenant/user comes from the session, never the request.
+- New dependency, skill or plugin versions wait {{QUARANTINE_DAYS}} days after
+  release before we adopt them; a security-fix bypass is explicit and recorded.
 - Input never becomes code: parameterized queries only, commands take an args
   array, no raw HTML from users.
 {{ENTRY_FILE_LOCK}}  <!-- e.g. "- Never edit this file without {{OWNER}}'s explicit approval; propose the change and wait." Only if chosen at init. -->

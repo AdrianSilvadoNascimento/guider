@@ -62,6 +62,9 @@ Things to determine, with where to look:
   `zod-to-openapi`), served at a route, exported as a file, and drift-gated in
   CI? Note whether it's generated-from-code or a hand-written spec that can drift
   (see `api-docs.md`).
+- **Supply chain** (`supply-chain.md`) — package managers and their versions,
+  lockfiles, Renovate/Dependabot config, and any release-age/cooldown setting
+  already present.
 - **Security posture** (`security.md`) — how authorization is done today (a
   policy module, guards/middleware, scoped repositories, RLS, or ad hoc checks in
   handlers); auth provider/library; whether the app is multi-tenant; public vs.
@@ -128,6 +131,11 @@ Cover these, skipping any the scan already answered:
 - Is there sensitive data needing **encryption** or **RLS**, and is multi-tenant
   isolation a requirement?
 - External APIs that need **retry-with-backoff** and **TTL caching**.
+
+**Supply chain** (`supply-chain.md`)
+- Release quarantine: keep the 7-day default, or lower it (minimum 1 day)?
+  Applies to dependencies, update bots, skills and plugins alike.
+- Who approves a bypass for an urgent security fix, and where is it recorded?
 
 **Security** (`security.md`) — confirm the scan, ask only what it couldn't show
 - Who owns what: user, tenant, org? Which roles exist, and where should the
@@ -295,26 +303,30 @@ Now write, using the templates in `assets/templates/`. Rules:
    `init` — propose the install commands and let the user run them.
 7. **Recommend Impeccable** if there's a frontend, and offer to run its
    installer.
-8. **Install the code graph** if accepted (`code-graph.md`): copy
+8. **Configure the release quarantine** (`supply-chain.md`): write the
+   release-age key for each package manager and update bot in use, edited in
+   place with a diff; add the hard rule to `AGENTS.md`. Flag any tool too old to
+   honor the key rather than writing a setting it ignores.
+9. **Install the code graph** if accepted (`code-graph.md`): copy
    `assets/graph.mjs` next to `check-docs.mjs`, write `.guider-graph.json` with
    only the boundaries the user confirmed, add `.guider/` to `.gitignore`. The
    first `build` is read-only on source files — run it and show the summary.
-9. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
+10. **Record the security model** in `ARCHITECTURE.md` §Security (`security.md`
    "What `/guider init` records") and add its two hard rules to `AGENTS.md`.
    Point at `/security-review` per change and a periodic whole-repo security
    audit; Guider's own audit covers the rules, not a penetration test.
-10. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
+11. **Record the API-docs decisions** if there's an HTTP API (`api-docs.md`): the
    tool generating the spec, where the spec file lives, the served docs route and
    its auth, and the drift-gate command — written into `ARCHITECTURE.md` /
    `APPLICATION.md`. Scaffold the gate if the user agreed; otherwise point them at
    `/guider spec`. Don't install the generator — propose the command.
-11. **Recommend the runtime infrastructure** where the interview surfaced a need
+12. **Recommend the runtime infrastructure** where the interview surfaced a need
    (`infrastructure.md`): Upstash Redis for a cache-aside layer, Trigger.dev for
    background workers, Pusher for realtime updates. Record the choice (and any
    existing alternative the project already uses) in `ARCHITECTURE.md` with its
    TTL / retry / idempotency / missed-message policy. Don't provision or install
    anything — name the next step for the user.
-12. **Scaffold the CI-automated audit workflow** only if the user opted in
+13. **Scaffold the CI-automated audit workflow** only if the user opted in
    (`ci-automation.md`). Fill `assets/templates/guider-audit.yml.tmpl` from the
    interview answers and write it to the project's workflow directory — keep
    only the one auth line (`anthropic_api_key` or `claude_code_oauth_token`)
@@ -326,5 +338,5 @@ Now write, using the templates in `assets/templates/`. Rules:
 
 Finish with a short summary: the files created/edited, the commands the user
 should run to activate the gates (install hooks, enable CI, add the secret if
-step 12 applied), and the one or two follow-ups worth doing next. Then stop —
+step 13 applied), and the one or two follow-ups worth doing next. Then stop —
 don't keep generating.
