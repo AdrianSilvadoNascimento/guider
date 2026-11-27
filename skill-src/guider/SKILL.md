@@ -195,6 +195,30 @@ frontend-design when visual quality matters. `init` proposes this; outside
 `init`, suggest it the first time a frontend change comes up. See
 `references/frontend-tooling.md` for the menu and install commands.
 
+## Token economy
+
+Tokens are a budget like any other, and Guider spends them deliberately: a small
+always-loaded `AGENTS.md`, owner docs opened only when a task needs them, and the
+code graph (`references/code-graph.md`) instead of re-reading the repo. For the
+agent's own output, recommend the **caveman** plugin
+(https://github.com/JuliusBrussee/caveman) and suggest using it proactively: terse
+replies that keep every technical fact, `/caveman-compress` on memory files,
+`/caveman-commit` for commit messages.
+
+```bash
+# Claude Code
+claude plugin marketplace add JuliusBrussee/caveman
+claude plugin install caveman@caveman
+# Codex and other agents
+npx skills add JuliusBrussee/caveman -g
+```
+
+Its boundary matches Guider's: compression is for the conversation. Generated
+docs, code comments, commits and PR descriptions stay in normal prose, because
+other people read them. Its install follows the release quarantine
+(`references/supply-chain.md`). `init` offers it; outside `init`, suggest it once
+when a session is clearly burning tokens on long replies.
+
 ## Editing existing files vs. creating new ones
 
 When Guider modifies a file the user already has (a config, an existing

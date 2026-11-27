@@ -202,6 +202,10 @@ Cover these, skipping any the scan already answered:
   configure.) If no, skip the rest of this round entirely — it's opt-in, not
   a default.
 
+**Token economy** (SKILL.md §Token economy)
+- Install the caveman plugin and use it proactively for agent replies and memory
+  files? Default: recommend it; docs, commits and PRs stay in normal prose.
+
 **Code graph** (`code-graph.md`)
 - Copy `graph.mjs` and build the structural graph (default yes — it is free and
   derived). Which layering rules and bounded contexts, already confirmed above,
@@ -241,6 +245,7 @@ Before writing anything, lay out exactly what you'll create or change:
 - whether you're adding the optional CI-automated `/guider audit` workflow
   (`ci-automation.md`), if the user opted in;
 - the Karpathy merge into `AGENTS.md`;
+- the caveman recommendation, if accepted (install command only);
 - the observability signals and SEO setup agreed (`observability.md`, `seo.md`),
   as proposed install commands, not installs;
 - the recommended managed services (Upstash for cache, Trigger.dev for workers,
