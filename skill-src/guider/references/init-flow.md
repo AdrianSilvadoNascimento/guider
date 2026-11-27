@@ -200,8 +200,11 @@ Cover these, skipping any the scan already answered:
   whether the docs route needs auth. `/guider spec` can scaffold or improve this.
 
 **Frontend**
-- Is there a frontend? If so, propose installing **Impeccable** for design
-  quality (see `references/quality-gates.md` for the command).
+- Is there a frontend? If so, which ground should agent tooling cover —
+  platform correctness, design quality, the component library, runtime
+  debugging? Propose from the menu in `frontend-tooling.md` (Modern Web Guidance
+  by default, plus a design tool such as Impeccable or frontend-design when
+  visual quality matters).
 
 Keep a running summary of decisions. When the open questions are answered, move
 on — don't pad the interview.
@@ -222,7 +225,7 @@ Before writing anything, lay out exactly what you'll create or change:
   (`ci-automation.md`), if the user opted in;
 - the Karpathy merge into `AGENTS.md`;
 - the recommended managed services (Upstash for cache, Trigger.dev for workers,
-  Pusher for realtime) where they fit, and the Impeccable recommendation.
+  Pusher for realtime) where they fit, and the chosen frontend tooling.
 
 Get a yes. This is the last cheap moment to redirect.
 
@@ -301,8 +304,8 @@ Now write, using the templates in `assets/templates/`. Rules:
    per-stack specifics). Only add what's missing; edit existing configs in
    place with a visible diff. Never install dependencies or run hooks during
    `init` — propose the install commands and let the user run them.
-7. **Recommend Impeccable** if there's a frontend, and offer to run its
-   installer.
+7. **Recommend the chosen frontend tooling** (`frontend-tooling.md`) if there's
+   a frontend, and offer to run the installers.
 8. **Configure the release quarantine** (`supply-chain.md`): write the
    release-age key for each package manager and update bot in use, edited in
    place with a diff; add the hard rule to `AGENTS.md`. Flag any tool too old to

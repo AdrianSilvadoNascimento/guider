@@ -144,7 +144,7 @@ the matching reference only when a change actually touches that area:
 | Supply chain: dependencies, skills, plugins | Release quarantine — adopt a version only after it has been public 7 days (negotiable, minimum 1); enforce it in the package manager and the update bot; bypass only for a recorded security fix | `references/supply-chain.md` |
 | Code graph (imports, hubs, cycles, boundaries) | Ask the graph before re-reading the repo: `impact` before editing a hub, `cycles`/`layers` as findings; graphify adds a semantic layer when present | `references/code-graph.md` |
 | Documentation | One fact in one owner doc, everything else points; current state only (the why goes to a decision log); every doc has a size budget, and over budget means split | `references/docs-standard.md` |
-| Frontend design quality | Recommend the Impeccable skill; don't reinvent a design system | see "Impeccable" below |
+| Frontend tooling | Recommend specialist agent tooling from a menu (Modern Web Guidance, Impeccable, frontend-design, …); don't reinvent a design system | `references/frontend-tooling.md` |
 
 The defaults are starting points. Whatever `/guider init` wrote into the
 project's docs is the real contract — when they disagree, the project wins.
@@ -182,14 +182,15 @@ doc full of unanswered placeholders, and it never scaffolds a doc the project
 didn't ask for. `assets/check-docs.mjs` enforces the budgets and line length in
 the project's pre-commit hook.
 
-## Impeccable (frontend design)
+## Frontend tooling
 
-Guider governs *engineering* standards, not visual taste — those are different
-disciplines. When the project has a frontend, recommend installing the
-Impeccable skill rather than hand-rolling design rules, and offer to run the
-installer. `init` proposes this; outside `init`, suggest it the first time a
-frontend change comes up. See `references/quality-gates.md` for the exact
-command and how to wire its detector into CI.
+Guider governs *engineering* standards, not visual taste. When the project has a
+frontend, recommend specialist agent tooling instead of hand-rolling design
+rules — from a menu, not a single fixed tool: Modern Web Guidance (current
+web-platform practice) by default, plus a design tool such as Impeccable or
+frontend-design when visual quality matters. `init` proposes this; outside
+`init`, suggest it the first time a frontend change comes up. See
+`references/frontend-tooling.md` for the menu and install commands.
 
 ## Editing existing files vs. creating new ones
 

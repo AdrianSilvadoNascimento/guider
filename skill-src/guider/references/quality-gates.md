@@ -87,7 +87,7 @@ CI is the gate humans can't bypass. Split it by cost:
 **On merge to the main branch (and nightly):**
 - **full** test suite (e2e, slow integration)
 - security/dependency audit and advisory checks
-- (if applicable) the Impeccable detector on the frontend (below)
+- (if applicable) a frontend tooling gate, e.g. `npx impeccable detect` (§6)
 
 Make the gates **required** branch-protection checks, not optional. A gate that
 doesn't block is documentation.
@@ -107,31 +107,10 @@ markers/tags the runner selects). `init` records the project's exact commands.
 Tie tests to the Karpathy "goal-driven execution" principle: turn a task into a
 failing test, then make it pass — the test is the success criterion.
 
-## 6. Impeccable (frontend design quality)
+## 6. Frontend tooling
 
-Engineering gates don't judge whether the UI looks generated. For that,
-recommend the **Impeccable** skill rather than inventing design rules — it
-ships a design vocabulary, slop detection, and a deterministic detector.
-
-Install (works with Claude Code, Cursor, Codex CLI, Gemini CLI, Copilot, …):
-
-```bash
-npx impeccable skills install      # sets up the build for the user's harness
-npx impeccable skills update       # pulls the latest
-```
-
-Claude Code plugin alternative:
-
-```text
-/plugin marketplace add pbakaus/impeccable
-# then open /plugin and install Impeccable from the list
-```
-
-Wire its detector into CI as a frontend gate:
-
-```bash
-npx impeccable detect src/         # 41 deterministic rules, exit code for the build
-```
-
-During `/guider init`, propose this for any project with a frontend and offer
-to run the installer. Reference: https://impeccable.style/#downloads
+Engineering gates don't judge whether the UI uses current platform practice or
+looks generated. For that, Guider recommends specialist agent tooling from a
+menu — Modern Web Guidance, Impeccable, frontend-design, and others — instead of
+inventing rules. The menu, install commands and which tools have a CI gate live
+in `frontend-tooling.md`.
