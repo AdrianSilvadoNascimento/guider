@@ -26,6 +26,22 @@ Skill destinations are defined in [`lib/utils.js`](../lib/utils.js) under
 `toolFromOpts` picks the tool from CLI flags. Add an entry there and wire a flag
 in [`bin/guider.js`](../bin/guider.js) to support another agent.
 
+## README animations
+
+The GIFs in `docs/assets/` are rendered with [Remotion](https://www.remotion.dev)
+from `media/`. That folder has its own `package.json` and is not part of the
+published CLI.
+
+```bash
+cd media
+npm install
+npm run studio   # live preview in the browser
+npm run render   # writes docs/assets/hero.gif and docs/assets/install.gif
+```
+
+When the pinned version in the README install command changes, update
+`COMMAND` and the version text in `media/src/InstallDemo.tsx`, then re-render.
+
 ## Tests
 
 Run the full suite with `npm test`. New behavior should come with a test —
