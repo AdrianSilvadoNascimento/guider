@@ -1,0 +1,20 @@
+{
+  "name": "guider-readme-media",
+  "private": true,
+  "description": "Remotion source for the animated README assets. Not part of the published CLI.",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:hero": "remotion render src/index.ts Hero ../docs/assets/hero.gif --codec=gif --every-nth-frame=2",
+    "render:install": "remotion render src/index.ts InstallDemo ../docs/assets/install.gif --codec=gif --every-nth-frame=2",
+    "render": "npm run render:hero && npm run render:install"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.547",
+    "@types/react": "^19.1.8",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "remotion": "^4.0.547",
+    "typescript": "^5.8.3"
+  }
+}
